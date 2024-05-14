@@ -1,7 +1,8 @@
 import { Router } from "express";
 import { newMessage } from "../controllers/twilio.controller";
+import { ctrlSendMessage } from "../controllers/ia.controller";
 
-class HomeRoutes {
+class TwilioRoutes {
   router = Router();
 
   constructor() {
@@ -12,12 +13,13 @@ class HomeRoutes {
     this.router.get("/", (req, res) => {
       res.send("Hello World!");
     });
-    this.router.post("/whatsapp", newMessage);
+    this.router.post("/ia", newMessage);
     this.router.get("/statuscallback", (req, res) => {
-      console.log(req.body);
+      console.log({ CallBack: req.body });
       res.send("OK");
     });
+    this, this.router.post("/testia", ctrlSendMessage);
   }
 }
 
-export default new HomeRoutes().router;
+export default new TwilioRoutes().router;

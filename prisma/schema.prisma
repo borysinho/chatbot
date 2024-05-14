@@ -14,11 +14,13 @@ datasource db {
 }
 
 model User {
-  id          Int      @id @default(autoincrement())
-  countrycode Int      @default(591)
-  cellphone   String   @unique
-  email       String?  @unique
+  // id          Int       @id @default(autoincrement())
+  countrycode Int       @default(591)
+  cellphone   Int
+  email       String?   @unique
   name        String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt   DateTime? @default(now())
+  updatedAt   DateTime? @updatedAt
+
+  @@id(name: "id", fields: [countrycode, cellphone])
 }
