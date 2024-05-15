@@ -10,12 +10,16 @@ import {
   srvIASend,
 } from "../services";
 import { User } from "@prisma/client";
+import { ListMessagesFromNumber } from "../services/twilio.service";
 
 const MessagingResponse = twiml.MessagingResponse;
 
 export const newMessage = catchedAsync(async (req: Request, res: Response) => {
-  // console.log({ body: req.body });
   const { WaId, Body, ProfileName } = req.body;
+
+  console.log(WaId);
+
+  const chatHistory = await ListMessagesFromNumber(WaId);
 
   const searchedUser = await srvGetWithFullPhoneNumber(WaId);
 
@@ -58,7 +62,11 @@ export const newMessage = catchedAsync(async (req: Request, res: Response) => {
     throw new HttpException(400, "No se pudo obtener el usuario");
   }
   console.log({ user: user.name || "" });
-  const chatCompletion = await srvIASend(user.name || "", Body);
+  const chatCompletion = await srvIASend(
+    user.name || "",
+    Body,
+    chatHistory || []
+  );
 
   console.log({ chatCompletion });
 
