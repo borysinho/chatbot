@@ -10,12 +10,18 @@ import {
   srvIASend,
 } from "../services";
 import { User } from "@prisma/client";
-import { ListMessagesFromNumber } from "../services/twilio.service";
+import {
+  DownloadAudio,
+  ListMessagesFromNumber,
+  TranscribeAudio,
+} from "../services/twilio.service";
+
+import axios from "axios";
 
 const MessagingResponse = twiml.MessagingResponse;
 
 export const newMessage = catchedAsync(async (req: Request, res: Response) => {
-  const { WaId, Body, ProfileName } = req.body;
+  const { WaId, Body, ProfileName, MediaContentType0, MediaUrl0 } = req.body;
 
   console.log(WaId);
 
@@ -62,13 +68,35 @@ export const newMessage = catchedAsync(async (req: Request, res: Response) => {
     throw new HttpException(400, "No se pudo obtener el usuario");
   }
   console.log({ user: user.name || "" });
+
+  if (MediaContentType0 && MediaContentType0.startsWith("audio/")) {
+    const audioUrl = MediaUrl0;
+    console.log("AudioUrl: ", audioUrl);
+
+    const audioFilename = await DownloadAudio(audioUrl);
+    const inputText = await TranscribeAudio(audioFilename);
+
+    console.log(inputText);
+  }
+
   const chatCompletion = await srvIASend(
     user.name || "",
     Body,
     chatHistory || []
   );
 
-  console.log({ chatCompletion });
+  console.log(chatCompletion.choices[0]?.message?.content);
+
+  //seria bueno mover esto a otra carpeta
+  function getWordsCount(text: string) {
+    if (!text) return 0;
+    return text.split(/\s+/).length;
+  }
+
+  /*  function calculateTime(length: number){
+    if(!length) return 0;
+    return 
+  } */
 
   // Preparamos una respuesta para Twilio
   const msgRes = new MessagingResponse();
