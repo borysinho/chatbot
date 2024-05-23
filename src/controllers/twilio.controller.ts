@@ -1,7 +1,6 @@
 import { Request, Response } from "express";
 import { twiml } from "twilio";
 import { HttpException, catchedAsync, response } from "../utils";
-import openAi from "../objects/ia.object";
 import twilio from "../objects/twilio.object";
 import {
   srvCreateUser,
@@ -61,8 +60,6 @@ export const newMessage = catchedAsync(async (req: Request, res: Response) => {
   if (!user) {
     throw new HttpException(400, "No se pudo obtener el usuario");
   }
-
-  // Groq
   console.log({ user: user.name || "" });
   const chatCompletion = await srvIASend(
     user.name || "",
