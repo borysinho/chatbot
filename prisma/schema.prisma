@@ -21,7 +21,7 @@ model Cliente {
   apellido       String?
   telefono       Int?
   email          String?
-  direccion      String
+  direccion      String?
   whatsappNumber Int
   profileName    String
   createdAt      DateTime @default(now())
@@ -49,6 +49,7 @@ model Cotizacion {
   Cotizacion_Vajilla    Cotizacion_Vajilla[]
   Cotizacion_Bebidas    Cotizacion_Bebidas[]
   Cotizacion_Fotografia Cotizacion_Fotografia[]
+  Cotizacion_Plato      Cotizacion_Plato[]
 }
 
 model ComboCotizacion {
@@ -140,6 +141,38 @@ model Cotizacion_Salon {
   Salon      Salon      @relation(fields: [id_Salon], references: [id])
 
   @@id([id_Cotizacion, id_Salon])
+}
+
+// PLATO
+enum TipoPlato {
+  entrada
+  platoFuerte
+  postre
+  cocktail
+  otro
+}
+
+model Plato {
+  id          Int       @id @default(autoincrement())
+  nombre      String
+  descripcion String
+  costo       Float
+  imagen      String
+  tipo        TipoPlato
+
+  Cotizacion_Plato Cotizacion_Plato[]
+}
+
+model Cotizacion_Plato {
+  id            Int      @id @default(autoincrement())
+  id_Cotizacion Int
+  horaAServir   DateTime
+  cantidad      Int
+
+  id_Plato Int
+
+  Cotizacion Cotizacion @relation(fields: [id_Cotizacion], references: [id])
+  Plato      Plato      @relation(fields: [id_Plato], references: [id])
 }
 
 // VAJILLA

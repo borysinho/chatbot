@@ -1,39 +1,50 @@
-import { Prisma, PrismaClient, User } from "@prisma/client";
+import { Prisma, PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
 async function seedUsers() {
-  const users: Prisma.UserCreateInput[] = [
+  const clienteInput: Prisma.ClienteCreateInput[] = [
     {
-      countrycode: 591,
-      cellphone: 77685777,
-      name: "Borys",
-      email: "borysquiroga@gmail.com",
+      nombre: "Borys",
+      profileName: "Borys Quiroga",
+      whatsappNumber: 59177685777,
     },
     {
-      countrycode: 591,
-      cellphone: 74613450,
-      name: "Marcelo",
-      email: "marcelo0920.z@gmail.com",
+      nombre: "Marcelo",
+      profileName: "Marce",
+      whatsappNumber: 59174613450,
     },
     {
-      countrycode: 591,
-      cellphone: 72151717,
-      name: "Nicole",
-      email: "nicolericaldi@gmail.com",
+      nombre: "Nicole",
+      profileName: "Nico",
+      whatsappNumber: 59172151717,
     },
-    {
-      countrycode: 591,
-      cellphone: 71321099,
-      name: "Miguel",
-      email: "migueljppx@gmail.com",
-    },
-    // Adicionar mas si hacen falta
   ];
 
-  await prisma.user.createMany({
-    data: users,
-  });
+  const clientes = await prisma.cliente.createMany({ data: clienteInput });
+
+  const salonInput: Prisma.SalonCreateInput[] = [
+    {
+      nombre: "Doña Flora",
+      direccion: "https://g.co/kgs/naq5hXG",
+      capacidad: 200,
+      costoDia: 5000,
+    },
+    {
+      nombre: "Salón de Eventos Elianne 1",
+      direccion: "https://g.co/kgs/J15HXLC",
+      capacidad: 150,
+      costoDia: 7000,
+    },
+    {
+      nombre: "Leonardo Salón de Eventos & Catering",
+      direccion: "https://g.co/kgs/JYLiq8X",
+      capacidad: 120,
+      costoDia: 8000,
+    },
+  ];
+
+  const salones = await prisma.salon.createMany({ data: salonInput });
 
   console.log("Users seeded successfully!");
 }
