@@ -14,6 +14,7 @@ import {
   DownloadAudio,
   ListMessagesFromNumber,
   TranscribeAudio,
+  uploadAudio,
 } from "../services/twilio.service";
 
 import axios from "axios";
@@ -21,7 +22,7 @@ import axios from "axios";
 const MessagingResponse = twiml.MessagingResponse;
 
 export const newMessage = catchedAsync(async (req: Request, res: Response) => {
-  const { WaId, Body, ProfileName, MediaContentType0, MediaUrl0 } = req.body;
+  let { WaId, Body, ProfileName, MediaContentType0, MediaUrl0 } = req.body;
 
   console.log(WaId);
 
@@ -71,12 +72,13 @@ export const newMessage = catchedAsync(async (req: Request, res: Response) => {
 
   if (MediaContentType0 && MediaContentType0.startsWith("audio/")) {
     const audioUrl = MediaUrl0;
-    console.log("AudioUrl: ", audioUrl);
 
     const audioFilename = await DownloadAudio(audioUrl);
-    const inputText = await TranscribeAudio(audioFilename);
+    const audioUrlCloud = await uploadAudio(audioFilename);
+    String(audioUrlCloud);
+    const transcribedAudio = await TranscribeAudio(audioUrlCloud);
 
-    console.log(inputText);
+    Body = transcribedAudio;
   }
 
   const chatCompletion = await srvIASend(

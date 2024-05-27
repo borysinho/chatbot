@@ -1,0 +1,17 @@
+[
+  {
+    "nombre": "caballo",
+    "costoHora": 100,
+    "descripcion": "Hermoso caballo de raza pura para llevar a los novios al salon"
+  },
+  {
+    "nombre": "limusina",
+    "costoHora": 300,
+    "descripcion": "Limusina Mercedes-Benz Grande y espacioso para llevar a los novios con elegancia y comodidad"
+  },
+  {
+    "nombre": "berlina",
+    "costoHora": 300,
+    "descripcion": "Berlina Skoda Octavia sofisticado para llevar con elegancia a los novios."
+  }
+]
