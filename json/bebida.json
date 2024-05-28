@@ -1,0 +1,23 @@
+[
+  {
+    "id_TipoBebida": 1,
+    "nombre": "Cocacola",
+    "costo": 14,
+    "descripcion": "Bebida carbonatada analcoholica",
+    "imagen": "https://www.coca-cola.com/content/dam/onexp/gt/es/brands/coca-cola/es_coca-cola_prod_orginal-bottle-600mL_750x750_v1.jpg"
+  },
+  {
+    "id_TipoBebida": 1,
+    "nombre": "Sprite",
+    "costo": 14,
+    "descripcion": "Bebida carbonatada analcoholica",
+    "imagen": "https://www.coca-cola.com/content/dam/onexp/ph/en/brands/sprite/sprite/ph_sprite_prod_bottle_750x750.jpg"
+  },
+  {
+    "id_TipoBebida": 1,
+    "nombre": "Fanta",
+    "costo": 14,
+    "descripcion": "Bebida carbonatada analcoholica",
+    "imagen": "https://www.fidalga.com/cdn/shop/products/FANTA-PERSONAL-NARANJA-500ML.png?v=1653343937"
+  }
+]

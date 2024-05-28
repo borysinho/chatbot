@@ -1,0 +1,12 @@
+[
+  {
+    "id_Transporte": 1,
+    "imagen": "https://www.shutterstock.com/image-photo/don-breed-horse-running-on-600nw-2061848336.jpg",
+    "descripcion": "Alfonso es un gran caballo con mucha fuerza"
+  },
+  {
+    "id_Transporte": 2,
+    "imagen": "https://limomarket.com/wp-content/uploads/2021/01/WhatsApp-Image-2021-01-17-at-11.55.35-1-1024x621.jpeg",
+    "descripcion": "Preciosa Limusina Mercedes-Benz"
+  }
+]
