@@ -29,8 +29,6 @@
     "@prisma/client": "^5.13.0",
     "assemblyai": "^4.4.3",
     "axios": "^1.7.2",
-    "chromadb": "^1.8.1",
-    "chromadb-default-embed": "^2.13.2",
     "cloudinary": "^2.2.0",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
