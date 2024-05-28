@@ -15,11 +15,11 @@ class HomeRoutes {
   }
 
   intializeRoutes() {
-    this.router.get("/users", ctrlGetUsers);
-    this.router.get("/user", ctrlGetUser);
-    this.router.post("/users", ctrlCreateUser);
-    this.router.put("/users", ctrlUpdateUser);
-    this.router.delete("/users", ctrlDeleteUser);
+    this.router.get("/usuario", ctrlGetUsers);
+    this.router.get("/usuario/:id", ctrlGetUser);
+    this.router.post("/usuario", ctrlCreateUser);
+    this.router.put("/usuario/:id", ctrlUpdateUser);
+    this.router.delete("/usuario/:id", ctrlDeleteUser);
   }
 }
 

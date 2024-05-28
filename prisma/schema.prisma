@@ -13,53 +13,20 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// Cotización, Cliente, Chat, Reserva, Pagos, ComboCotización
-
 model Cliente {
   id             Int      @id @default(autoincrement())
   nombre         String?
   apellido       String?
-  telefono       Int?
+  telefono       String?
   email          String?
   direccion      String?
-  whatsappNumber Int
+  whatsappNumber String   @unique
   profileName    String
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
   ChatCliente ChatCliente[]
-  Cotizacion  Cotizacion[]
-}
-
-model Cotizacion {
-  id              Int      @id @default(autoincrement())
-  montoTotalBS    Float
-  descuentoBS     Float
-  montoGarantiaBS Float
-  notas           String
-  fecha           DateTime @default(now())
-
-  id_Cliente Int
-
-  Cliente Cliente @relation(fields: [id_Cliente], references: [id])
-
-  ComboCotizacion       ComboCotizacion[]
-  Pagos                 Pagos[]
-  Cotizacion_Salon      Cotizacion_Salon[]
-  Cotizacion_Vajilla    Cotizacion_Vajilla[]
-  Cotizacion_Bebidas    Cotizacion_Bebidas[]
-  Cotizacion_Fotografia Cotizacion_Fotografia[]
-  Cotizacion_Plato      Cotizacion_Plato[]
-}
-
-model ComboCotizacion {
-  id          Int    @id @default(autoincrement())
-  nombreCombo String
-  descripcion String
-
-  id_Cotizacion Int
-
-  Cotizacion Cotizacion @relation(fields: [id_Cotizacion], references: [id])
+  cotizacion  Cotizacion[]
 }
 
 model Chat {
@@ -80,226 +47,313 @@ model ChatCliente {
   @@id([id_Cliente, id_Chat])
 }
 
-model Reserva {
+model Cotizacion {
   id              Int      @id @default(autoincrement())
-  fechaLimitePago DateTime
-  fechaEvento     DateTime
+  montoTotal      Float
+  fechaCotizacion DateTime
 
-  Pagos Pagos[]
+  idCliente Int
+
+  Cliente           Cliente             @relation(fields: [idCliente], references: [id])
+  detalleCotizacion DetalleCotizacion[]
 }
 
-model Pagos {
-  id_Cotizacion Int
-  id_Reserva    Int
-
-  Cotizacion Cotizacion @relation(fields: [id_Cotizacion], references: [id])
-  Reserva    Reserva    @relation(fields: [id_Reserva], references: [id])
-
-  @@id([id_Cotizacion, id_Reserva])
+model ContratoServicios {
+  id                       Int                        @id @default(autoincrement())
+  montoTotal               Float
+  descuento                Float
+  fechaContrato            DateTime
+  DetalleContratoServicios DetalleContratoServicios[]
 }
 
-// SALON
+model DetalleCotizacion {
+  idCotizacion Int
+  idProducto   Int
+  cantidad     Int
+  fechaEntrega DateTime
 
-model ImagenesSalon {
-  id          Int    @id @default(autoincrement())
-  imagen      String
-  descripcion String
+  Cotizacion Cotizacion @relation(fields: [idCotizacion], references: [id])
+  Producto   Producto   @relation(fields: [idProducto], references: [id])
 
-  id_Salon Int
-
-  Salon Salon @relation(fields: [id_Salon], references: [id])
+  @@id([idCotizacion, idProducto])
 }
 
-model AmbientesSalon {
-  id          Int    @id @default(autoincrement())
-  nombre      String
-  descripcion String
+model DetalleContratoServicios {
+  idContratoServicios Int
+  idProducto          Int
+  cantidad            Int
+  fechaIni            DateTime
+  fechaFin            DateTime
 
-  id_Salon Int
+  ContratoServicios ContratoServicios @relation(fields: [idContratoServicios], references: [id])
+  Producto          Producto          @relation(fields: [idProducto], references: [id])
 
-  Salon Salon @relation(fields: [id_Salon], references: [id])
+  @@id([idContratoServicios, idProducto])
 }
 
-model Salon {
-  id        Int    @id @default(autoincrement())
-  nombre    String
-  direccion String
-  capacidad Int
-  costoDia  Float
-
-  ImagenesSalon    ImagenesSalon[]
-  AmbientesSalon   AmbientesSalon[]
-  Cotizacion_Salon Cotizacion_Salon[]
-}
-
-model Cotizacion_Salon {
-  id_Cotizacion Int
-  id_Salon      Int
-  detalle       String
-
-  Cotizacion Cotizacion @relation(fields: [id_Cotizacion], references: [id])
-  Salon      Salon      @relation(fields: [id_Salon], references: [id])
-
-  @@id([id_Cotizacion, id_Salon])
-}
-
-// PLATO
-enum TipoPlato {
-  entrada
-  platoFuerte
-  postre
-  cocktail
-  otro
-}
-
-model Plato {
-  id          Int       @id @default(autoincrement())
-  nombre      String
-  descripcion String
-  costo       Float
-  imagen      String
-  tipo        TipoPlato
-
-  Cotizacion_Plato Cotizacion_Plato[]
-}
-
-model Cotizacion_Plato {
-  id            Int      @id @default(autoincrement())
-  id_Cotizacion Int
-  horaAServir   DateTime
-  cantidad      Int
-
-  id_Plato Int
-
-  Cotizacion Cotizacion @relation(fields: [id_Cotizacion], references: [id])
-  Plato      Plato      @relation(fields: [id_Plato], references: [id])
-}
-
-// VAJILLA
-enum TipoVajilla {
-  plato
-  vaso
-  cubiertos
-  servilleta
-  mantel
-  otro
-}
-
-model Vajilla {
-  id          Int         @id @default(autoincrement())
-  nombre      String
-  descripcion String
-  tipo        TipoVajilla
-  costo       Float
-
-  Cotizacion_Vajilla Cotizacion_Vajilla[]
-}
-
-model Cotizacion_Vajilla {
-  id            Int @id @default(autoincrement())
-  id_Cotizacion Int
-  cantidad      Int
-
-  id_Vajilla Int
-
-  Cotizacion Cotizacion @relation(fields: [id_Cotizacion], references: [id])
-  Vajilla    Vajilla    @relation(fields: [id_Vajilla], references: [id])
-}
-
-// BEBIDAS
-enum TipoBebida {
-  jugoNatural
-  gaseosa
-  cerveza
-  vino
-  licor
-  agua
-  tekila
-  ron
-  whisky
-  otro
-}
-
-model Cotizacion_Bebidas {
-  id            Int      @id @default(autoincrement())
-  id_Cotizacion Int
-  cantidad      Int
-  horaAServir   DateTime
-
-  id_Bebidas Int
-
-  Cotizacion Cotizacion @relation(fields: [id_Cotizacion], references: [id])
-  Bebidas    Bebidas    @relation(fields: [id_Bebidas], references: [id])
-}
-
-model Bebidas {
-  id          Int        @id @default(autoincrement())
-  nombre      String
-  imagen      String
-  costo       Float
-  descripcion String
-  tipo        TipoBebida
-
-  Cotizacion_Bebidas Cotizacion_Bebidas[]
-}
-
-// FOTOGRAFIA
-model Fotografia {
+model Categoria {
   id          Int    @id @default(autoincrement())
   nombre      String
   descripcion String
-  costo       Float
-  imagen      String
 
-  Cotizacion_Fotografia Cotizacion_Fotografia[]
+  Categoria_Producto Categoria_Producto[]
 }
 
-model Cotizacion_Fotografia {
-  id            Int      @id @default(autoincrement())
-  id_Cotizacion Int
-  cantidad      Int
-  horaAServir   DateTime
+model Categoria_Producto {
+  idCategoria Int
+  idProducto  Int
 
-  id_Fotografia Int
+  Categoria Categoria @relation(fields: [idCategoria], references: [id])
+  Producto  Producto  @relation(fields: [idProducto], references: [id])
 
-  Cotizacion Cotizacion @relation(fields: [id_Cotizacion], references: [id])
-  Fotografia Fotografia @relation(fields: [id_Fotografia], references: [id])
+  @@id([idCategoria, idProducto])
 }
 
-// TRANSPORTE
-model ImagenesTransporte {
+model UnidadDeMedida {
   id          Int    @id @default(autoincrement())
-  imagen      String
+  nombre      String
+  abreviatura String
   descripcion String
 
-  id_Transporte Int
-
-  Transporte Transporte @relation(fields: [id_Transporte], references: [id])
+  Producto Producto[]
 }
 
-model Transporte {
-  id        Int    @id @default(autoincrement())
-  nombre    String
-  capacidad Int
-  costoHora Float
+model Producto {
+  id              Int     @id @default(autoincrement())
+  nombre          String  @unique
+  descripcion     String?
+  precio          Float
+  stock           Int
+  caracteristicas Json
 
-  ImagenesTransporte    ImagenesTransporte[]
-  Cotizacion_Transporte Cotizacion_Transporte[]
+  idUnidadDeMedida Int
+  UnidadDeMedida   UnidadDeMedida @relation(fields: [idUnidadDeMedida], references: [id])
+
+  DetalleCotizacion        DetalleCotizacion[]
+  DetalleContratoServicios DetalleContratoServicios[]
+  Categoria_Producto       Categoria_Producto[]
 }
 
-model Cotizacion_Transporte {
-  id            Int      @id @default(autoincrement())
-  origen        String
-  destino       String
-  nroCelularRef Int
-  horaInicio    DateTime
-  horaFin       DateTime
+// model Reserva {
+//   id              Int      @id @default(autoincrement())
+//   fechaLimitePago DateTime
+//   fechaEvento     DateTime
 
-  id_Transporte Int
-  id_Cotizacion Int
+//   Pagos Pagos[]
+// }
 
-  Transporte Transporte @relation(fields: [id_Transporte], references: [id])
-}
+// model Pagos {
+//   id_Cotizacion Int
+//   id_Reserva    Int
+
+//   Cotizacion Cotizacion @relation(fields: [id_Cotizacion], references: [id])
+//   Reserva    Reserva    @relation(fields: [id_Reserva], references: [id])
+
+//   @@id([id_Cotizacion, id_Reserva])
+// }
+
+// // SALON
+
+// model ImagenesSalon {
+//   id          Int    @id @default(autoincrement())
+//   imagen      String
+//   descripcion String
+
+//   id_Salon Int
+
+//   Salon Salon @relation(fields: [id_Salon], references: [id])
+// }
+
+// model AmbientesSalon {
+//   id          Int    @id @default(autoincrement())
+//   nombre      String
+//   descripcion String
+
+//   id_Salon Int
+
+//   Salon Salon @relation(fields: [id_Salon], references: [id])
+// }
+
+// model Salon {
+//   id        Int    @id @default(autoincrement())
+//   nombre    String
+//   direccion String
+//   capacidad Int
+//   costoDia  Float
+
+//   ImagenesSalon    ImagenesSalon[]
+//   AmbientesSalon   AmbientesSalon[]
+//   Cotizacion_Salon Cotizacion_Salon[]
+// }
+
+// model Cotizacion_Salon {
+//   id_Cotizacion Int
+//   id_Salon      Int
+//   detalle       String
+
+//   Cotizacion Cotizacion @relation(fields: [id_Cotizacion], references: [id])
+//   Salon      Salon      @relation(fields: [id_Salon], references: [id])
+
+//   @@id([id_Cotizacion, id_Salon])
+// }
+
+// // PLATO
+// enum TipoPlato {
+//   entrada
+//   platoFuerte
+//   postre
+//   cocktail
+//   otro
+// }
+
+// model Plato {
+//   id          Int       @id @default(autoincrement())
+//   nombre      String
+//   descripcion String
+//   costo       Float
+//   imagen      String
+//   tipo        TipoPlato
+
+//   Cotizacion_Plato Cotizacion_Plato[]
+// }
+
+// model Cotizacion_Plato {
+//   id            Int      @id @default(autoincrement())
+//   id_Cotizacion Int
+//   horaAServir   DateTime
+//   cantidad      Int
+
+//   id_Plato Int
+
+//   Cotizacion Cotizacion @relation(fields: [id_Cotizacion], references: [id])
+//   Plato      Plato      @relation(fields: [id_Plato], references: [id])
+// }
+
+// // VAJILLA
+// enum TipoVajilla {
+//   plato
+//   vaso
+//   cubiertos
+//   servilleta
+//   mantel
+//   otro
+// }
+
+// model Vajilla {
+//   id          Int         @id @default(autoincrement())
+//   nombre      String
+//   descripcion String
+//   tipo        TipoVajilla
+//   costo       Float
+
+//   Cotizacion_Vajilla Cotizacion_Vajilla[]
+// }
+
+// model Cotizacion_Vajilla {
+//   id            Int @id @default(autoincrement())
+//   id_Cotizacion Int
+//   cantidad      Int
+
+//   id_Vajilla Int
+
+//   Cotizacion Cotizacion @relation(fields: [id_Cotizacion], references: [id])
+//   Vajilla    Vajilla    @relation(fields: [id_Vajilla], references: [id])
+// }
+
+// // BEBIDAS
+// enum TipoBebida {
+//   jugoNatural
+//   gaseosa
+//   cerveza
+//   vino
+//   licor
+//   agua
+//   tekila
+//   ron
+//   whisky
+//   otro
+// }
+
+// model Cotizacion_Bebidas {
+//   id            Int      @id @default(autoincrement())
+//   id_Cotizacion Int
+//   cantidad      Int
+//   horaAServir   DateTime
+
+//   id_Bebidas Int
+
+//   Cotizacion Cotizacion @relation(fields: [id_Cotizacion], references: [id])
+//   Bebidas    Bebidas    @relation(fields: [id_Bebidas], references: [id])
+// }
+
+// model Bebidas {
+//   id          Int        @id @default(autoincrement())
+//   nombre      String
+//   imagen      String
+//   costo       Float
+//   descripcion String
+//   tipo        TipoBebida
+
+//   Cotizacion_Bebidas Cotizacion_Bebidas[]
+// }
+
+// // FOTOGRAFIA
+// model Fotografia {
+//   id          Int    @id @default(autoincrement())
+//   nombre      String
+//   descripcion String
+//   costo       Float
+//   imagen      String
+
+//   Cotizacion_Fotografia Cotizacion_Fotografia[]
+// }
+
+// model Cotizacion_Fotografia {
+//   id            Int      @id @default(autoincrement())
+//   id_Cotizacion Int
+//   cantidad      Int
+//   horaAServir   DateTime
+
+//   id_Fotografia Int
+
+//   Cotizacion Cotizacion @relation(fields: [id_Cotizacion], references: [id])
+//   Fotografia Fotografia @relation(fields: [id_Fotografia], references: [id])
+// }
+
+// // TRANSPORTE
+// model ImagenesTransporte {
+//   id          Int    @id @default(autoincrement())
+//   imagen      String
+//   descripcion String
+
+//   id_Transporte Int
+
+//   Transporte Transporte @relation(fields: [id_Transporte], references: [id])
+// }
+
+// model Transporte {
+//   id        Int    @id @default(autoincrement())
+//   nombre    String
+//   capacidad Int
+//   costoHora Float
+
+//   ImagenesTransporte    ImagenesTransporte[]
+//   Cotizacion_Transporte Cotizacion_Transporte[]
+// }
+
+// model Cotizacion_Transporte {
+//   id            Int      @id @default(autoincrement())
+//   origen        String
+//   destino       String
+//   nroCelularRef Int
+//   horaInicio    DateTime
+//   horaFin       DateTime
+
+//   id_Transporte Int
+//   id_Cotizacion Int
+
+//   Transporte Transporte @relation(fields: [id_Transporte], references: [id])
+// }
 
 // model User {
 //   // id          Int       @id @default(autoincrement())

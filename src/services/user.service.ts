@@ -1,64 +1,70 @@
 import prisma from "../objects/prisma.object";
 import { Prisma } from "@prisma/client";
 
-export const srvGetUser = async (countrycode: number, cellphone: number) => {
-  const user = await prisma.user.findUnique({
+export const srvGetclienteId = async (id: number) => {
+  const cliente = await prisma.cliente.findUnique({
     where: {
-      id: {
-        countrycode,
-        cellphone,
-      },
+      id,
     },
   });
 
-  return user;
+  return cliente;
 };
 
-export const srvGetUsers = async () => {
-  const user = await prisma.user.findMany();
+export const srvGetclientes = async () => {
+  const cliente = await prisma.cliente.findMany();
 
-  return user;
+  return cliente;
 };
 
-export const srvCreateUser = async (data: Prisma.UserCreateInput) => {
-  const user = await prisma.user.create({ data });
+export const srvCreatecliente = async (data: Prisma.ClienteCreateInput) => {
+  const cliente = await prisma.cliente.create({ data });
 
-  return user;
+  return cliente;
 };
 
-export const srvUpdateUser = async (
-  countrycode: number,
-  cellphone: number,
-  data: Prisma.UserUpdateInput
+export const srvUpdateclienteId = async (
+  id: number,
+  data: Prisma.ClienteUpdateInput
 ) => {
-  const user = await prisma.user.update({
+  const cliente = await prisma.cliente.update({
     where: {
-      id: {
-        countrycode,
-        cellphone,
-      },
+      id,
     },
     data,
   });
 
-  return user;
+  return cliente;
 };
 
-export const srvDeleteUser = async (countrycode: number, cellphone: number) => {
-  const user = await prisma.user.delete({
+export const srvUpdateClienteWhatsapp = async (
+  waNumber: string,
+  data: Prisma.ClienteUpdateInput
+) => {
+  const cliente = await prisma.cliente.update({
     where: {
-      id: {
-        countrycode,
-        cellphone,
-      },
+      whatsappNumber: waNumber,
+    },
+    data,
+  });
+
+  return cliente;
+};
+
+export const srvDeleteclieteId = async (id: number) => {
+  const cliente = await prisma.cliente.delete({
+    where: {
+      id,
     },
   });
 
-  return user;
+  return cliente;
 };
 
-export const srvGetWithFullPhoneNumber = async (fullPhoneNumber: string) => {
-  const users = await srvGetUsers();
-  const user = users.find((user) => user.fullNumber === fullPhoneNumber);
-  return user;
-};
+// export const srvGetWithFullPhoneNumber = async (fullPhoneNumber: string) => {
+//   const clietes = await srvGetclientes();
+//   const cliete = clietes.find(
+//     (cliente) => cliente.fullNumber === fullPhoneNumber
+//   );
+//   return cliente;
+// };

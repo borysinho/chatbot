@@ -3,12 +3,13 @@ import { twiml } from "twilio";
 import { HttpException, catchedAsync, response } from "../utils";
 import twilio from "../objects/twilio.object";
 import {
-  srvCreateUser,
-  srvGetWithFullPhoneNumber,
-  srvUpdateUser,
+  srvCreatecliente,
+  // srvGetWithFullPhoneNumber,
+  srvUpdateclienteId,
   srvIASend,
+  srvUpdateClienteWhatsapp,
 } from "../services";
-import { User } from "@prisma/client";
+import { Cliente } from "@prisma/client";
 import { ListMessagesFromNumber } from "../services/twilio.service";
 
 const MessagingResponse = twiml.MessagingResponse;
@@ -20,20 +21,16 @@ export const newMessage = catchedAsync(async (req: Request, res: Response) => {
 
   const chatHistory = await ListMessagesFromNumber(WaId);
 
-  const searchedUser = await srvGetWithFullPhoneNumber(WaId);
+  const searchedUser = WaId;
 
-  let user: User;
+  let Cliente: Cliente;
 
   // Si el usuario no está registrado o si el ProfileName ha cambiado
   if (searchedUser && searchedUser.name !== ProfileName) {
     // Actualizamos el nombre del usuario al ProfileName
-    user = await srvUpdateUser(
-      searchedUser.countrycode,
-      searchedUser.cellphone,
-      {
-        name: ProfileName,
-      }
-    );
+    Cliente = await srvUpdateClienteWhatsapp(WaId, {
+      profileName: ProfileName,
+    });
   } else {
     // Si NO existe el usuario
     if (!searchedUser) {
@@ -45,24 +42,23 @@ export const newMessage = catchedAsync(async (req: Request, res: Response) => {
       console.log({ dif });
       const countryCode = phoneNumber.substring(1, dif + 1);
 
-      user = await srvCreateUser({
-        countrycode: parseInt(countryCode),
-        cellphone: parseInt(nationalFormat),
-        name: ProfileName,
+      Cliente = await srvCreatecliente({
+        whatsappNumber: WaId,
+        profileName: ProfileName,
       });
     } else {
       // El usuario existe pero el nombre del perfil sigue igual entonces no hacemos nada
-      user = searchedUser;
+      Cliente = searchedUser;
     }
   }
-  console.log({ user });
+  console.log({ Cliente });
   // Enviamos mensaje a la API de la IA
-  if (!user) {
+  if (!Cliente) {
     throw new HttpException(400, "No se pudo obtener el usuario");
   }
-  console.log({ user: user.name || "" });
+  console.log({ user: Cliente.nombre || "" });
   const chatCompletion = await srvIASend(
-    user.name || "",
+    Cliente.nombre || "",
     Body,
     chatHistory || []
   );
