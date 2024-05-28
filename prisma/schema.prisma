@@ -13,6 +13,22 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum Remitente {
+  Cliente
+  IA
+}
+
+model Chat {
+  id        Int      @id @default(autoincrement())
+  mensaje   String
+  createdAt DateTime @default(now())
+
+  remitente Remitente
+
+  idCliente Int
+  cliente   Cliente @relation(fields: [idCliente], references: [id])
+}
+
 model Cliente {
   id             Int      @id @default(autoincrement())
   nombre         String?
@@ -25,26 +41,8 @@ model Cliente {
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
-  ChatCliente ChatCliente[]
-  cotizacion  Cotizacion[]
-}
-
-model Chat {
-  id      Int      @id @default(autoincrement())
-  mensaje String
-  fecha   DateTime @default(now())
-
-  ChatCliente ChatCliente[]
-}
-
-model ChatCliente {
-  id_Cliente Int
-  id_Chat    Int
-
-  Cliente Cliente @relation(fields: [id_Cliente], references: [id])
-  Chat    Chat    @relation(fields: [id_Chat], references: [id])
-
-  @@id([id_Cliente, id_Chat])
+  cotizacion Cotizacion[]
+  Chat       Chat[]
 }
 
 model Cotizacion {

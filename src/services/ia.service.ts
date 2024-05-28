@@ -19,7 +19,7 @@ export const srvIASend = async (
         name,
       },
     ],
-    model: "llama3-8b-8192",
+    model: "mixtral-8x7b-32768",
     // This ensures reproducibility. With the same seed value, the model will generate the same or similar text sequence for a given input. It’s handy for testing and comparing model behavior.
     seed: 10,
     // 2000 Tokens, this is a fairly high limit, so longer texts are allowed. It’s great for applications that need detailed responses, like writing articles, reports, or stories. However, generating such a long sequence might increase computational demands and processing time.
