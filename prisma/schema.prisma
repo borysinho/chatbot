@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -13,45 +7,35 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum Remitente {
-  Cliente
-  IA
-}
-
 model Chat {
-  id        Int      @id @default(autoincrement())
+  id        Int       @id @default(autoincrement())
   mensaje   String
-  createdAt DateTime @default(now())
-
+  createdAt DateTime  @default(now())
   remitente Remitente
-
   idCliente Int
-  cliente   Cliente @relation(fields: [idCliente], references: [id])
+  cliente   Cliente   @relation(fields: [idCliente], references: [id])
 }
 
 model Cliente {
-  id             Int      @id @default(autoincrement())
+  id             Int          @id @default(autoincrement())
   nombre         String?
   apellido       String?
   telefono       String?
   email          String?
   direccion      String?
-  whatsappNumber String   @unique
+  whatsappNumber String       @unique
   profileName    String
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
-
-  cotizacion Cotizacion[]
-  Chat       Chat[]
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  Chat           Chat[]
+  cotizacion     Cotizacion[]
 }
 
 model Cotizacion {
-  id              Int      @id @default(autoincrement())
-  montoTotal      Float
-  fechaCotizacion DateTime
-
-  idCliente Int
-
+  id                Int                 @id @default(autoincrement())
+  montoTotal        Float
+  fechaCotizacion   DateTime
+  idCliente         Int
   Cliente           Cliente             @relation(fields: [idCliente], references: [id])
   detalleCotizacion DetalleCotizacion[]
 }
@@ -69,9 +53,8 @@ model DetalleCotizacion {
   idProducto   Int
   cantidad     Int
   fechaEntrega DateTime
-
-  Cotizacion Cotizacion @relation(fields: [idCotizacion], references: [id])
-  Producto   Producto   @relation(fields: [idProducto], references: [id])
+  Cotizacion   Cotizacion @relation(fields: [idCotizacion], references: [id])
+  Producto     Producto   @relation(fields: [idProducto], references: [id])
 
   @@id([idCotizacion, idProducto])
 }
@@ -82,425 +65,51 @@ model DetalleContratoServicios {
   cantidad            Int
   fechaIni            DateTime
   fechaFin            DateTime
-
-  ContratoServicios ContratoServicios @relation(fields: [idContratoServicios], references: [id])
-  Producto          Producto          @relation(fields: [idProducto], references: [id])
+  ContratoServicios   ContratoServicios @relation(fields: [idContratoServicios], references: [id])
+  Producto            Producto          @relation(fields: [idProducto], references: [id])
 
   @@id([idContratoServicios, idProducto])
 }
 
 model Categoria {
-  id          Int    @id @default(autoincrement())
-  nombre      String
-  descripcion String
-
+  id                 Int                  @id @default(autoincrement())
+  nombre             String
+  descripcion        String
   Categoria_Producto Categoria_Producto[]
 }
 
 model Categoria_Producto {
   idCategoria Int
   idProducto  Int
-
-  Categoria Categoria @relation(fields: [idCategoria], references: [id])
-  Producto  Producto  @relation(fields: [idProducto], references: [id])
+  Categoria   Categoria @relation(fields: [idCategoria], references: [id])
+  Producto    Producto  @relation(fields: [idProducto], references: [id])
 
   @@id([idCategoria, idProducto])
 }
 
 model UnidadDeMedida {
-  id          Int    @id @default(autoincrement())
+  id          Int        @id @default(autoincrement())
   nombre      String
   abreviatura String
   descripcion String
-
-  Producto Producto[]
+  Producto    Producto[]
 }
 
 model Producto {
-  id              Int     @id @default(autoincrement())
-  nombre          String  @unique
-  descripcion     String?
-  precio          Float
-  stock           Int
-  caracteristicas Json
-
-  idUnidadDeMedida Int
-  UnidadDeMedida   UnidadDeMedida @relation(fields: [idUnidadDeMedida], references: [id])
-
-  DetalleCotizacion        DetalleCotizacion[]
-  DetalleContratoServicios DetalleContratoServicios[]
+  id                       Int                        @id @default(autoincrement())
+  nombre                   String                     @unique
+  descripcion              String?
+  precio                   Float
+  stock                    Int
+  caracteristicas          Json
+  idUnidadDeMedida         Int
   Categoria_Producto       Categoria_Producto[]
+  DetalleContratoServicios DetalleContratoServicios[]
+  DetalleCotizacion        DetalleCotizacion[]
+  UnidadDeMedida           UnidadDeMedida             @relation(fields: [idUnidadDeMedida], references: [id])
 }
 
-// model Reserva {
-//   id              Int      @id @default(autoincrement())
-//   fechaLimitePago DateTime
-//   fechaEvento     DateTime
-
-//   Pagos Pagos[]
-// }
-
-// model Pagos {
-//   id_Cotizacion Int
-//   id_Reserva    Int
-
-//   Cotizacion Cotizacion @relation(fields: [id_Cotizacion], references: [id])
-//   Reserva    Reserva    @relation(fields: [id_Reserva], references: [id])
-
-//   @@id([id_Cotizacion, id_Reserva])
-// }
-
-// // SALON
-
-// model ImagenesSalon {
-//   id          Int    @id @default(autoincrement())
-//   imagen      String
-//   descripcion String
-
-//   id_Salon Int
-
-//   Salon Salon @relation(fields: [id_Salon], references: [id])
-// }
-
-// model AmbientesSalon {
-//   id          Int    @id @default(autoincrement())
-//   nombre      String
-//   descripcion String
-
-//   id_Salon Int
-
-//   Salon Salon @relation(fields: [id_Salon], references: [id])
-// }
-
-// model Salon {
-//   id        Int    @id @default(autoincrement())
-//   nombre    String
-//   direccion String
-//   capacidad Int
-//   costoDia  Float
-
-//   ImagenesSalon    ImagenesSalon[]
-//   AmbientesSalon   AmbientesSalon[]
-//   Cotizacion_Salon Cotizacion_Salon[]
-// }
-
-// model Cotizacion_Salon {
-//   id_Cotizacion Int
-//   id_Salon      Int
-//   detalle       String
-
-//   Cotizacion Cotizacion @relation(fields: [id_Cotizacion], references: [id])
-//   Salon      Salon      @relation(fields: [id_Salon], references: [id])
-
-//   @@id([id_Cotizacion, id_Salon])
-// }
-
-// // PLATO
-// enum TipoPlato {
-//   entrada
-//   platoFuerte
-//   postre
-//   cocktail
-//   otro
-// }
-
-// model Plato {
-//   id          Int       @id @default(autoincrement())
-//   nombre      String
-//   descripcion String
-//   costo       Float
-//   imagen      String
-//   tipo        TipoPlato
-
-//   Cotizacion_Plato Cotizacion_Plato[]
-// }
-
-// model Cotizacion_Plato {
-//   id            Int      @id @default(autoincrement())
-//   id_Cotizacion Int
-//   horaAServir   DateTime
-//   cantidad      Int
-
-//   id_Plato Int
-
-//   Cotizacion Cotizacion @relation(fields: [id_Cotizacion], references: [id])
-//   Plato      Plato      @relation(fields: [id_Plato], references: [id])
-// }
-
-// // VAJILLA
-// enum TipoVajilla {
-//   plato
-//   vaso
-//   cubiertos
-//   servilleta
-//   mantel
-//   otro
-// }
-
-// model Vajilla {
-//   id          Int         @id @default(autoincrement())
-//   nombre      String
-//   descripcion String
-//   tipo        TipoVajilla
-//   costo       Float
-
-//   Cotizacion_Vajilla Cotizacion_Vajilla[]
-// }
-
-// model Cotizacion_Vajilla {
-//   id            Int @id @default(autoincrement())
-//   id_Cotizacion Int
-//   cantidad      Int
-
-//   id_Vajilla Int
-
-//   Cotizacion Cotizacion @relation(fields: [id_Cotizacion], references: [id])
-//   Vajilla    Vajilla    @relation(fields: [id_Vajilla], references: [id])
-// }
-
-// // BEBIDAS
-// enum TipoBebida {
-//   jugoNatural
-//   gaseosa
-//   cerveza
-//   vino
-//   licor
-//   agua
-//   tekila
-//   ron
-//   whisky
-//   otro
-// }
-
-// model Cotizacion_Bebidas {
-//   id            Int      @id @default(autoincrement())
-//   id_Cotizacion Int
-//   cantidad      Int
-//   horaAServir   DateTime
-
-//   id_Bebidas Int
-
-//   Cotizacion Cotizacion @relation(fields: [id_Cotizacion], references: [id])
-//   Bebidas    Bebidas    @relation(fields: [id_Bebidas], references: [id])
-// }
-
-// model Bebidas {
-//   id          Int        @id @default(autoincrement())
-//   nombre      String
-//   imagen      String
-//   costo       Float
-//   descripcion String
-//   tipo        TipoBebida
-
-//   Cotizacion_Bebidas Cotizacion_Bebidas[]
-// }
-
-// // FOTOGRAFIA
-// model Fotografia {
-//   id          Int    @id @default(autoincrement())
-//   nombre      String
-//   descripcion String
-//   costo       Float
-//   imagen      String
-
-//   Cotizacion_Fotografia Cotizacion_Fotografia[]
-// }
-
-// model Cotizacion_Fotografia {
-//   id            Int      @id @default(autoincrement())
-//   id_Cotizacion Int
-//   cantidad      Int
-//   horaAServir   DateTime
-
-//   id_Fotografia Int
-
-//   Cotizacion Cotizacion @relation(fields: [id_Cotizacion], references: [id])
-//   Fotografia Fotografia @relation(fields: [id_Fotografia], references: [id])
-// }
-
-// // TRANSPORTE
-// model ImagenesTransporte {
-//   id          Int    @id @default(autoincrement())
-//   imagen      String
-//   descripcion String
-
-//   id_Transporte Int
-
-//   Transporte Transporte @relation(fields: [id_Transporte], references: [id])
-// }
-
-// model Transporte {
-//   id        Int    @id @default(autoincrement())
-//   nombre    String
-//   capacidad Int
-//   costoHora Float
-
-//   ImagenesTransporte    ImagenesTransporte[]
-//   Cotizacion_Transporte Cotizacion_Transporte[]
-// }
-
-// model Cotizacion_Transporte {
-//   id            Int      @id @default(autoincrement())
-//   origen        String
-//   destino       String
-//   nroCelularRef Int
-//   horaInicio    DateTime
-//   horaFin       DateTime
-
-//   id_Transporte Int
-//   id_Cotizacion Int
-
-//   Transporte Transporte @relation(fields: [id_Transporte], references: [id])
-// }
-
-// model User {
-//   // id          Int       @id @default(autoincrement())
-//   countrycode Int       @default(591)
-//   cellphone   Int
-//   email       String?   @unique
-//   name        String?
-//   createdAt   DateTime? @default(now())
-//   updatedAt   DateTime? @updatedAt
-
-//   @@id(name: "id", fields: [countrycode, cellphone])
-// }
-
-// model Color {
-//   id   Int    @id @default(autoincrement())
-//   name String
-
-//   LaptopColor Laptop_Color[]
-// }
-
-// model Laptop {
-//   id              Int    @id @default(autoincrement())
-//   description     String
-//   displayInch     Int
-//   batteryWattHour Float
-
-//   LaptopColor Laptop_Color[]
-//   Model       Model[]
-// }
-
-// model Laptop_Color {
-//   id_Laptop Int
-//   id_Color  Int
-
-//   Laptop Laptop @relation(fields: [id_Laptop], references: [id])
-//   Color  Color  @relation(fields: [id_Color], references: [id])
-
-//   @@id([id_Color, id_Laptop])
-// }
-
-// model DefaultMemory {
-//   id         Int @id @default(autoincrement())
-//   capacityGB Int
-
-//   Model Model[]
-// }
-
-// model Chip {
-//   id   Int    @id @default(autoincrement())
-//   name String
-
-//   Model Model[]
-// }
-
-// model ConfigurableMemory {
-//   id         Int @id @default(autoincrement())
-//   capacityGB Int
-
-//   Model_ConfigurableMemory Model_ConfigurableMemory[]
-// }
-
-// model Model_ConfigurableMemory {
-//   id_ConfigurableMemory Int
-
-//   id_Laptop        Int
-//   id_Chip          Int
-//   id_DefaultMemory Int
-
-//   ConfigurableMemory ConfigurableMemory @relation(fields: [id_ConfigurableMemory], references: [id])
-//   Model              Model              @relation(fields: [id_Laptop, id_Chip, id_DefaultMemory], references: [id_Laptop, id_Chip, id_DefaultMemory])
-
-//   @@id([id_ConfigurableMemory])
-// }
-
-// enum StorageType {
-//   ssd
-//   hdd
-// }
-
-// model DefaultStorage {
-//   id          Int         @id @default(autoincrement())
-//   capacityGB  Int
-//   storageType StorageType @default(ssd)
-
-//   Model Model[]
-// }
-
-// model ConfigurableStorage {
-//   id          Int         @id @default(autoincrement())
-//   capacityGB  Int
-//   storageType StorageType @default(ssd)
-
-//   Model_ConfigurableStorage Model_ConfigurableStorage[]
-
-//   id_StorageType Int
-// }
-
-// model Model_ConfigurableStorage {
-//   id_ConfigurableStorage Int
-//   ConfigurableStorage    ConfigurableStorage @relation(fields: [id_ConfigurableStorage], references: [id])
-
-//   id_Laptop        Int
-//   id_Chip          Int
-//   id_DefaultMemory Int
-//   Model            Model @relation(fields: [id_Laptop, id_Chip, id_DefaultMemory], references: [id_Laptop, id_Chip, id_DefaultMemory])
-
-//   @@id(fields: [id_ConfigurableStorage])
-// }
-
-// model Wireless {
-//   id   Int    @id @default(autoincrement())
-//   name String
-
-//   Model Model[]
-// }
-
-// model Bluetooth {
-//   id   Int    @id @default(autoincrement())
-//   name String
-
-//   Model Model[]
-// }
-
-// model Model {
-//   weightKg Int
-
-//   // Primary Key
-//   id_Laptop        Int
-//   id_Chip          Int
-//   id_DefaultMemory Int
-
-//   // Primary Key
-//   Laptop        Laptop        @relation(fields: [id_Laptop], references: [id])
-//   Chip          Chip          @relation(fields: [id_Chip], references: [id])
-//   DefaultMemory DefaultMemory @relation(fields: [id_DefaultMemory], references: [id])
-
-//   // Foreign Key
-//   // id_Model_ConfigurableMemory Int
-//   id_DefaultStorage Int
-//   id_Wireless       Int
-//   id_Bluetooth      Int
-
-//   // Foreign Key
-//   DefaultStorage DefaultStorage @relation(fields: [id_DefaultStorage], references: [id])
-
-//   Model_ConfigurableMemory  Model_ConfigurableMemory[]
-//   Model_ConfigurableStorage Model_ConfigurableStorage[]
-//   Wireless                  Wireless                    @relation(fields: [id_Wireless], references: [id])
-//   Bluetooth                 Bluetooth                   @relation(fields: [id_Bluetooth], references: [id])
-
-//   @@id(name: "id", fields: [id_Laptop, id_Chip, id_DefaultMemory])
-// }
+enum Remitente {
+  Cliente
+  IA
+}

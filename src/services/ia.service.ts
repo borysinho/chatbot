@@ -1,17 +1,25 @@
 import { APIError } from "groq-sdk";
 import grok from "../objects/ia.object";
 import { HttpException } from "../utils";
+import { srvGetProductos } from "./producto.service";
 
 export const srvIASend = async (
   name: string,
   content: string,
   chatHistory: Array<any>
 ) => {
+  const catalogo = await srvGetProductos();
+
+  while (!catalogo) {
+    await new Promise((resolve) => setTimeout(resolve, 100));
+  }
+
   const completion = await grok.chat.completions.create({
     messages: [
       {
         role: "system",
-        content: `El usuario ${name} te esta escribiendo, responde con respuestas personalizadas, toma en cuenta que el usuario se ha comunicado contigo antes. Aquí te paso el historial de mensajes que te ha enviado: ${chatHistory}`,
+        content: `Tu nombre es Paul y trabajas en una agencia de Boda como un weeding Planner, organizas bodas, el cliente ${name} te ha escrito, tienes que responder con respuestas personalizada, y este cliente se ha comunicado contigo antes, aca te entrego el historial de lo que te ha dicho ${chatHistory}, recuerda que siempre tienes que ofertar los productos que tenemos en el catalogo, este es el catalogo con el que cuentas [${catalogo}], cualquier cosa que el cliente pregunte y no lo tengamos en el catalogo, quiero que les digas que en una semana lo vamos a tener, y nosotros trabajamos con el boliviano como moneda `,
+        // content: `El usuario ${name} te esta escribiendo, responde con respuestas personalizadas, toma en cuenta que el usuario se ha comunicado contigo antes. Aquí te paso el historial de mensajes que te ha enviado: ${chatHistory}`,
       },
       {
         role: "user",
