@@ -41,70 +41,34 @@ model Cliente {
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
-  cotizacion Cotizacion[]
   Chat       Chat[]
+  Cotizacion Cotizacion[]
+  Contrato   Contrato[]
 }
 
 model Cotizacion {
-  id              Int      @id @default(autoincrement())
-  montoTotal      Float
-  fechaCotizacion DateTime
-
-  idCliente Int
-
-  Cliente           Cliente             @relation(fields: [idCliente], references: [id])
-  detalleCotizacion DetalleCotizacion[]
-}
-
-model ContratoServicios {
-  id                       Int                        @id @default(autoincrement())
-  montoTotal               Float
-  descuento                Float
-  fechaContrato            DateTime
-  DetalleContratoServicios DetalleContratoServicios[]
-}
-
-model DetalleCotizacion {
-  idCotizacion Int
-  idProducto   Int
-  cantidad     Int
+  id           Int      @id @default(autoincrement())
+  montoTotal   Float
   fechaEntrega DateTime
+  createdAt    DateTime @default(now())
 
-  Cotizacion Cotizacion @relation(fields: [idCotizacion], references: [id])
-  Producto   Producto   @relation(fields: [idProducto], references: [id])
-
-  @@id([idCotizacion, idProducto])
+  idCliente                             Int
+  cliente                               Cliente                                 @relation(fields: [idCliente], references: [id])
+  DetalleProductosIndividualesCotizados DetalleProductosIndividualesCotizados[]
+  DetalleJuegoDeProductosCotizados      DetalleJuegoDeProductosCotizados[]
 }
 
-model DetalleContratoServicios {
-  idContratoServicios Int
-  idProducto          Int
-  cantidad            Int
-  fechaIni            DateTime
-  fechaFin            DateTime
+model Contrato {
+  id           Int      @id @default(autoincrement())
+  montoTotal   Float
+  descuento    Float?
+  fechaEntrega DateTime
+  createdAt    DateTime @default(now())
 
-  ContratoServicios ContratoServicios @relation(fields: [idContratoServicios], references: [id])
-  Producto          Producto          @relation(fields: [idProducto], references: [id])
-
-  @@id([idContratoServicios, idProducto])
-}
-
-model Categoria {
-  id          Int    @id @default(autoincrement())
-  nombre      String
-  descripcion String
-
-  Categoria_Producto Categoria_Producto[]
-}
-
-model Categoria_Producto {
-  idCategoria Int
-  idProducto  Int
-
-  Categoria Categoria @relation(fields: [idCategoria], references: [id])
-  Producto  Producto  @relation(fields: [idProducto], references: [id])
-
-  @@id([idCategoria, idProducto])
+  idCliente                               Int
+  cliente                                 Cliente                                   @relation(fields: [idCliente], references: [id])
+  DetalleProductosIndividualesContratados DetalleProductosIndividualesContratados[]
+  DetalleJuegoDeProductosContratados      DetalleJuegoDeProductosContratados[]
 }
 
 model UnidadDeMedida {
@@ -113,23 +77,150 @@ model UnidadDeMedida {
   abreviatura String
   descripcion String
 
-  Producto Producto[]
+  Productos Productos[]
 }
 
-model Producto {
-  id              Int     @id @default(autoincrement())
-  nombre          String  @unique
-  descripcion     String?
-  precio          Float
-  stock           Int
-  caracteristicas Json
+model Productos {
+  id          Int      @id @default(autoincrement())
+  nombre      String   @unique
+  descripcion String
+  precio      Float
+  stock       Int
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   idUnidadDeMedida Int
-  UnidadDeMedida   UnidadDeMedida @relation(fields: [idUnidadDeMedida], references: [id])
+  unidadDeMedida   UnidadDeMedida @relation(fields: [idUnidadDeMedida], references: [id])
 
-  DetalleCotizacion        DetalleCotizacion[]
-  DetalleContratoServicios DetalleContratoServicios[]
-  Categoria_Producto       Categoria_Producto[]
+  esVendible Boolean
+  esServicio Boolean
+
+  StockPorFecha                           StockPorFecha[]
+  DetalleDeCategoriaDeProductos           DetalleDeCategoriaDeProductos[]
+  ImagenProducto                          ImagenProducto[]
+  Caracteristicas                         Caracteristicas[]
+  DetalleJuegoDeProductos                 DetalleJuegoDeProductos[]
+  DetalleProductosIndividualesCotizados   DetalleProductosIndividualesCotizados[]
+  DetalleProductosIndividualesContratados DetalleProductosIndividualesContratados[]
+}
+
+model StockPorFecha {
+  fecha      DateTime
+  idProducto Int
+  stock      Int
+
+  productos Productos @relation(fields: [idProducto], references: [id])
+
+  @@id([idProducto, fecha])
+}
+
+model Categoria {
+  id          Int    @id @default(autoincrement())
+  nombre      String
+  descripcion String
+
+  DetalleDeCategoriaDeProductos DetalleDeCategoriaDeProductos[]
+}
+
+model DetalleDeCategoriaDeProductos {
+  idCategoria Int
+  idProducto  Int
+
+  categoria Categoria @relation(fields: [idCategoria], references: [id])
+  productos Productos @relation(fields: [idProducto], references: [id])
+
+  @@id([idCategoria, idProducto])
+}
+
+model ImagenProducto {
+  idProducto Int    @id
+  urlImagen  String
+
+  productos Productos @relation(fields: [idProducto], references: [id])
+}
+
+model Caracteristicas {
+  id     Int    @id @default(autoincrement())
+  nombre String
+  valor  String
+
+  idProducto Int
+  productos  Productos @relation(fields: [idProducto], references: [id])
+}
+
+model JuegoDeProductos {
+  id          Int    @id @default(autoincrement())
+  nombre      String
+  descripcion String
+  precioJuego Float
+
+  DetalleJuegoDeProductos DetalleJuegoDeProductos[]
+}
+
+model DetalleJuegoDeProductos {
+  idJuegoDeProductos Int
+  idProducto         Int
+
+  juegoDeProductos JuegoDeProductos @relation(fields: [idJuegoDeProductos], references: [id])
+  productos        Productos        @relation(fields: [idProducto], references: [id])
+
+  detalleJuegoDeProductosCotizados   DetalleJuegoDeProductosCotizados[]
+  DetalleJuegoDeProductosContratados DetalleJuegoDeProductosContratados[]
+
+  @@id([idJuegoDeProductos, idProducto])
+}
+
+model DetalleProductosIndividualesCotizados {
+  idProducto   Int
+  idCotizacion Int
+  cantidad     Int
+  precio       Int
+
+  productos  Productos  @relation(fields: [idProducto], references: [id])
+  cotizacion Cotizacion @relation(fields: [idCotizacion], references: [id])
+
+  @@id([idProducto, idCotizacion])
+}
+
+model DetalleJuegoDeProductosCotizados {
+  idProducto         Int
+  idJuegoDeProductos Int
+  idCotizacion       Int
+  cantidad           Int
+  precio             Int
+  juegoCompleto      Boolean
+
+  detalleJuegoDeProductos DetalleJuegoDeProductos @relation(fields: [idProducto, idJuegoDeProductos], references: [idProducto, idJuegoDeProductos])
+  cotizacion              Cotizacion              @relation(fields: [idCotizacion], references: [id])
+
+  // @@id([idProducto, idJuegoDeProductos, idCotizacion])
+
+  @@id([idProducto, idJuegoDeProductos, idCotizacion])
+}
+
+model DetalleProductosIndividualesContratados {
+  idProducto Int
+  idContrato Int
+  cantidad   Int
+  precio     Int
+
+  productos Productos @relation(fields: [idProducto], references: [id])
+  contrato  Contrato  @relation(fields: [idContrato], references: [id])
+
+  @@id([idProducto, idContrato])
+}
+
+model DetalleJuegoDeProductosContratados {
+  idProducto         Int
+  idJuegoDeProductos Int
+  idContrato         Int
+  cantidad           Int
+  precio             Int
+
+  detalleJuegoDeProductos DetalleJuegoDeProductos @relation(fields: [idProducto, idJuegoDeProductos], references: [idProducto, idJuegoDeProductos])
+  contrato                Contrato                @relation(fields: [idContrato], references: [id])
+
+  @@id([idProducto, idJuegoDeProductos, idContrato])
 }
 
 // model Reserva {
