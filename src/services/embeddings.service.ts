@@ -36,7 +36,7 @@ export const generarEmbeddingsProductos = async () => {
 
     caracteristicas = caracteristicas + "\n";
 
-    detalle = `Servicio ${producto.nombre}: Este servicio tiene un costo unitario de ${producto.precioServicio} ${producto.moneda}. Las características del servicio son:\n${caracteristicas}`;
+    detalle = `[Servicio ${producto.nombre}: Este servicio tiene un costo unitario de ${producto.precioServicio} ${producto.moneda}. Las características del servicio son:\n${caracteristicas}`;
 
     const stockPorFecha = producto.StockPorFecha.map(
       (stock) =>
@@ -50,7 +50,7 @@ export const generarEmbeddingsProductos = async () => {
     ).join("\n");
 
     if (stockPorFecha.length > 0) {
-      detalle += `La disponibilidad del mismo está basada de acuerdo a reservas, por lo que a las fechas y disponibilidades se detallan a continuación:\n${stockPorFecha}`;
+      detalle += `La disponibilidad del mismo está basada de acuerdo a reservas, por lo que a las fechas y disponibilidades se detallan a continuación:\n${stockPorFecha}]`;
     }
 
     // console.log({ detalle });
