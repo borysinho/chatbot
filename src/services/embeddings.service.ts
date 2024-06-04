@@ -29,48 +29,48 @@ export const generarEmbeddingsProductos = async () => {
 
   for (const producto of productos) {
     let detalle = "";
-    if (producto.esServicio) {
-      let caracteristicas = producto.Caracteristicas.map((caracteristica) => {
-        return `${caracteristica.nombre}: ${caracteristica.valor}.`;
-      }).join("\n");
+    // if (producto.esServicio) {
+    let caracteristicas = producto.Caracteristicas.map((caracteristica) => {
+      return `${caracteristica.nombre}: ${caracteristica.valor}.`;
+    }).join("\n");
 
-      caracteristicas = caracteristicas + "\n";
+    caracteristicas = caracteristicas + "\n";
 
-      detalle = `Servicio ${producto.nombre}: Este servicio tiene un costo unitario de ${producto.precioServicio} ${producto.moneda}. Las características del servicio son:\n${caracteristicas}`;
+    detalle = `Servicio ${producto.nombre}: Este servicio tiene un costo unitario de ${producto.precioServicio} ${producto.moneda}. Las características del servicio son:\n${caracteristicas}`;
 
-      const stockPorFecha = producto.StockPorFecha.map(
-        (stock) =>
-          `Para el ${getFormatedDate(stock.fecha)} ${
-            stock.stock === 1 ? "queda solo " : "quedan"
-          } ${stock.stock} ${
-            stock.stock === 1
-              ? producto.unidadDeMedida.nombre + " disponible."
-              : producto.unidadDeMedida.nombrePlural + " disponibles."
-          }`
-      ).join("\n");
+    const stockPorFecha = producto.StockPorFecha.map(
+      (stock) =>
+        `Para el ${getFormatedDate(stock.fecha)} ${
+          stock.stock === 1 ? "queda solo " : "quedan"
+        } ${stock.stock} ${
+          stock.stock === 1
+            ? producto.unidadDeMedida.nombre + " disponible."
+            : producto.unidadDeMedida.nombrePlural + " disponibles."
+        }`
+    ).join("\n");
 
-      if (stockPorFecha.length > 0) {
-        detalle += `La disponibilidad del mismo está basada de acuerdo a reservas, por lo que a las fechas y disponibilidades se detallan a continuación:\n${stockPorFecha}`;
-      }
-
-      // console.log({ detalle });
-      const productoEmbedding = await prisma.productosEmbeddings.findUnique({
-        where: {
-          idProducto: producto.id,
-        },
-      });
-
-      // console.log({ productoEmbedding });
-
-      if (productoEmbedding === null) {
-        // const { embedding } = (await obtenerEmbedding(detalle)).data[0];
-        // console.log(require("util").inspect({ embedding }, { depth: null }));
-        const embedding = [0.63930345, 0.45545435, 0.61955833];
-        //       (${producto.id}, ${producto.nombre}, ${detalle}, ${embedding}::vector)`;
-        await prisma.$executeRaw`INSERT INTO "ProductosEmbeddings" ("idProducto", "NombreProducto", "Descripcion", "Embedding") VALUES
-        (${producto.id}, ${producto.nombre}, ${detalle}, ${embedding}::vector)`;
-      }
+    if (stockPorFecha.length > 0) {
+      detalle += `La disponibilidad del mismo está basada de acuerdo a reservas, por lo que a las fechas y disponibilidades se detallan a continuación:\n${stockPorFecha}`;
     }
+
+    // console.log({ detalle });
+    const productoEmbedding = await prisma.productosEmbeddings.findUnique({
+      where: {
+        idProducto: producto.id,
+      },
+    });
+
+    // console.log({ productoEmbedding });
+
+    if (productoEmbedding === null) {
+      // const { embedding } = (await obtenerEmbedding(detalle)).data[0];
+      // console.log(require("util").inspect({ embedding }, { depth: null }));
+      const embedding = [0.63930345, 0.45545435, 0.61955833];
+      //       (${producto.id}, ${producto.nombre}, ${detalle}, ${embedding}::vector)`;
+      await prisma.$executeRaw`INSERT INTO "ProductosEmbeddings" ("idProducto", "NombreProducto", "Descripcion", "Embedding") VALUES
+        (${producto.id}, ${producto.nombre}, ${detalle}, ${embedding}::vector)`;
+    }
+    // }
   }
 };
 
