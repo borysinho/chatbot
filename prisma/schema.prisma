@@ -116,16 +116,21 @@ model Productos {
   DetalleJuegoDeProductos                 DetalleJuegoDeProductos[]
   DetalleProductosIndividualesCotizados   DetalleProductosIndividualesCotizados[]
   DetalleProductosIndividualesContratados DetalleProductosIndividualesContratados[]
-  ProductosEmbeddings                     ProductosEmbeddings[]
+
+  Embeddings Embeddings[]
 }
 
-model ProductosEmbeddings {
-  idProducto     Int                      @id
-  NombreProducto String
-  Descripcion    String
-  Embedding      Unsupported("vector(3)")
+model Embeddings {
+  idProductoEmbedding Int                      @id @default(autoincrement())
+  NombreProducto      String
+  Descripcion         String
+  Embedding           Unsupported("vector(3)")
 
-  productos Productos @relation(fields: [idProducto], references: [id])
+  idProducto Int?
+  Productos  Productos? @relation(fields: [idProducto], references: [id])
+
+  idJuegoDeProductos Int?
+  JuegoDeProductos   JuegoDeProductos? @relation(fields: [idJuegoDeProductos], references: [id])
 }
 
 model StockPorFecha {
@@ -179,14 +184,18 @@ model JuegoDeProductos {
   precioJuego Float
 
   DetalleJuegoDeProductos DetalleJuegoDeProductos[]
+  Embeddings              Embeddings[]
 }
 
 model DetalleJuegoDeProductos {
-  idJuegoDeProductos Int
-  idProducto         Int
+  cantidad      Int
+  precio        Float
+  juegoCompleto Boolean
 
-  juegoDeProductos JuegoDeProductos @relation(fields: [idJuegoDeProductos], references: [id])
-  productos        Productos        @relation(fields: [idProducto], references: [id])
+  idJuegoDeProductos Int
+  juegoDeProductos   JuegoDeProductos @relation(fields: [idJuegoDeProductos], references: [id])
+  idProducto         Int
+  productos          Productos        @relation(fields: [idProducto], references: [id])
 
   detalleJuegoDeProductosCotizados   DetalleJuegoDeProductosCotizados[]
   DetalleJuegoDeProductosContratados DetalleJuegoDeProductosContratados[]

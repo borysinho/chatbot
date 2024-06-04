@@ -23,8 +23,8 @@ async function seedUsers() {
 
   const producto = await prisma.productos.create({
     data: {
-      nombre: "Alquiler de sillas plásticas",
-      esProducto: true,
+      nombre: "Sillas plásticas blancas",
+      esProducto: false,
       precioProducto: 100,
       moneda: "Bs",
       esServicio: true,
