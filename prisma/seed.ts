@@ -3,140 +3,139 @@ import { Prisma, PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
 async function seedUsers() {
-  const unidadesDeMedida: Prisma.UnidadDeMedidaCreateInput[] = [
-    { nombre: "Unidad", abreviatura: "u", descripcion: "Unidad individual" },
-    {
-      nombre: "Servicio",
-      abreviatura: "srv",
-      descripcion: "Servicio prestado",
-    },
-    {
-      nombre: "Paquete",
-      abreviatura: "paq",
-      descripcion: "Paquete de productos o servicios",
-    },
-    { nombre: "Persona", abreviatura: "pax", descripcion: "Por persona" },
-    { nombre: "Hora", abreviatura: "hr", descripcion: "Por hora" },
-  ];
+  // const usuario = await prisma.cliente.create({
+  //   data: {
+  //     whatsappNumber: "59177685777",
+  //     profileName: "Borys Quiroga",
+  //   },
+  // });
 
   const unidades = await prisma.unidadDeMedida.createMany({
-    data: unidadesDeMedida,
+    data: [
+      {
+        nombre: "unidad",
+        descripcion: "unidad",
+        nombrePlural: "unidades",
+        abreviatura: "und",
+      },
+    ],
   });
 
-  const clienteInput: Prisma.ClienteCreateInput[] = [
-    {
-      nombre: "Borys",
-      profileName: "Borys Quiroga",
-      whatsappNumber: "59177685777",
-    },
-    {
-      nombre: "Marcelo",
-      profileName: "Marce",
-      whatsappNumber: "59174613450",
-    },
-    {
-      nombre: "Nicole",
-      profileName: "Nicole",
-      whatsappNumber: "59172151717",
-    },
-  ];
-
-  const clientes = await prisma.cliente.createMany({ data: clienteInput });
-
-  const productosInput: Prisma.ProductoCreateManyInput[] = [
-    {
-      nombre: "Bucket de Novia",
-      descripcion: "Ramo de flores para la novia",
-      precio: 300.0,
-      stock: 2,
-      caracteristicas: {
-        color: ["blanco", "amarillo"],
-        tipo: ["rosas", "lirios", "tulipanes", "margaritas"],
+  const producto = await prisma.productos.create({
+    data: {
+      nombre: "Alquiler de sillas plásticas",
+      esProducto: true,
+      precioProducto: 100,
+      moneda: "Bs",
+      esServicio: true,
+      precioServicio: 5,
+      tiempoServicioHoras: 24,
+      seVende: true,
+      stock: 200,
+      descripcion: "Servicio de alquiler de sillas",
+      unidadDeMedida: {
+        connect: {
+          id: 1,
+        },
       },
-      idUnidadDeMedida: 1,
-    },
-    {
-      nombre: "Centro de Mesa",
-      descripcion: "Decoración floral para mesas",
-      precio: 200.0,
-      stock: 50,
-      caracteristicas: { tipo: "floral", color: "variado" },
-      idUnidadDeMedida: 1,
-    },
-    {
-      nombre: "Fotografía y Filmación",
-      descripcion:
-        "Servicio de fotografía profesional y filmación para eventos de boda",
-      precio: 1000.0,
-      stock: 2,
-      caracteristicas: {
-        horas: 8,
-        fotos: "ilimitadas",
-        edición: "incluida",
-        retratos: 2,
+      Caracteristicas: {
+        create: [
+          {
+            nombre: "Color",
+            valor: "Blanco",
+          },
+          {
+            nombre: "Material",
+            valor: "Plástico",
+          },
+          {
+            nombre: "PesoMaximoSoportado",
+            valor: "180 Kg",
+          },
+          {
+            nombre: "Marca",
+            valor: "Rey",
+          },
+        ],
       },
-      idUnidadDeMedida: 2,
-    },
-    {
-      nombre: "Sistema de sonido profesional",
-      descripcion:
-        "Sonido Profesional JBL EON 615 con Micrófonos Inalámbricos y Cableados",
-      precio: 700.0,
-      stock: 2,
-      caracteristicas: { potencia: "alta", micrófonos: 2 },
-      idUnidadDeMedida: 5,
-    },
-    {
-      nombre: "Catering - Menu 1",
-      descripcion:
-        "Pollo a la crema con champiñones, lomo marinado al horno y postre",
-      precio: 100.0,
-      stock: 500,
-
-      caracteristicas: {
-        platos: "Pollo al Horno y Cerdo a la caja china",
-        postres: "Torta de tres leches",
+      StockPorFecha: {
+        create: [
+          {
+            fecha: new Date(2024, 10, 1),
+            stock: 160,
+          },
+        ],
       },
-      idUnidadDeMedida: 1,
+      DetalleDeCategoriaDeProductos: {
+        create: {
+          categoria: {
+            create: {
+              nombre: "sillas",
+              descripcion: "sillas",
+            },
+          },
+        },
+      },
+      ImagenProducto: {
+        create: {
+          urlImagen:
+            "https://images.freeimages.com/images/large-previews/5bc/old-chair-1530158.jpg",
+        },
+      },
     },
-  ];
-
-  const productos = await prisma.producto.createMany({ data: productosInput });
-
-  const categoriasInput: Prisma.CategoriaCreateManyInput[] = [
-    { nombre: "Ramos de Novia", descripcion: "Ramos de flores para la novia" },
-    { nombre: "Centros de Mesa", descripcion: "Decoración floral para mesas" },
-    {
-      nombre: "Fotografía y Filmación",
-      descripcion: "Servicio de fotografía profesional y filmación",
-    },
-    {
-      nombre: "Sonido Profesional",
-      descripcion: "Sistema de sonido profesional para eventos",
-    },
-    {
-      nombre: "Catering",
-      descripcion: "Servicio de catering para eventos",
-    },
-  ];
-
-  const categorias = await prisma.categoria.createMany({
-    data: categoriasInput,
   });
 
-  const categoriaProductoInput: Prisma.Categoria_ProductoCreateManyInput[] = [
-    { idCategoria: 1, idProducto: 1 },
-    { idCategoria: 2, idProducto: 2 },
-    { idCategoria: 3, idProducto: 3 },
-    { idCategoria: 4, idProducto: 4 },
-    { idCategoria: 5, idProducto: 5 },
-  ];
+  // const productoEmbedding = await prisma.productosEmbeddings.create({
+  //   data: {
+  //     Categorias: "sillas",
+  //     Descripcion: "Servicio de alquiler de sillas",
+  //     NombreProducto: "Alquiler de sillas plásticas",
+  //     idProducto: 1,
+  //   },
+  // });
 
-  const categoriaProductos = await prisma.categoria_Producto.createMany({
-    data: categoriaProductoInput,
-  });
+  // const productosInput: Prisma.ProductosCreateInput[] = [
+  //   {
+  //     nombre: "sillas plásticas",
+  //     esProducto: true,
+  //     precioProducto: 100,
+  //     moneda: "Bs",
+  //     esServicio: true,
+  //     precioServicio: 5,
+  //     seVende: true,
+  //     stock: 200,
+  //     descripcion: "",
+  //     unidadDeMedida: {
+  //       connect: {
+  //         id: unidades[0].id,
+  //       },
+  //     },
+  //     Caracteristicas: {
+  //       create: [
+  //         {
+  //           nombre: "color",
+  //           valor: "blanco",
+  //         },
+  //         {
+  //           nombre: "material",
+  //           valor: "plástico",
+  //         },
+  //         {
+  //           nombre: "pesoMaximoSoportado",
+  //           valor: "180 Kg",
+  //         },
+  //         {
+  //           nombre: "marca",
+  //           valor: "Rey",
+  //         },
+  //       ],
+  //     },
+  //   },
+  // ];
 
-  console.log("Users seeded successfully!");
+  // const productos = await prisma.productos.create({
+  //   data: productosInput,
+  // });
 }
 
 seedUsers()

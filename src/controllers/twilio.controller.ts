@@ -4,8 +4,6 @@ import { HttpException, catchedAsync, response } from "../utils";
 import twilio from "../objects/twilio.object";
 import {
   srvCreatecliente,
-  // srvGetWithFullPhoneNumber,
-  srvUpdateclienteId,
   srvIASend,
   srvUpdateClienteWhatsapp,
 } from "../services";

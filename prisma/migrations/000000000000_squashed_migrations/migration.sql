@@ -1,12 +1,18 @@
+-- CreateExtension
+CREATE EXTENSION IF NOT EXISTS "vector";
+
 -- CreateEnum
-CREATE TYPE "Remitente" AS ENUM ('Cliente', 'IA');
+CREATE TYPE "Role" AS ENUM ('user', 'system', 'assistant');
+
+-- CreateEnum
+CREATE TYPE "Moneda" AS ENUM ('USD', 'Bs');
 
 -- CreateTable
 CREATE TABLE "Chat" (
     "id" SERIAL NOT NULL,
-    "mensaje" TEXT NOT NULL,
+    "content" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "remitente" "Remitente" NOT NULL,
+    "role" "Role" NOT NULL,
     "idCliente" INTEGER NOT NULL,
 
     CONSTRAINT "Chat_pkey" PRIMARY KEY ("id")
@@ -55,6 +61,7 @@ CREATE TABLE "Contrato" (
 CREATE TABLE "UnidadDeMedida" (
     "id" SERIAL NOT NULL,
     "nombre" TEXT NOT NULL,
+    "nombrePlural" TEXT NOT NULL,
     "abreviatura" TEXT NOT NULL,
     "descripcion" TEXT NOT NULL,
 
@@ -66,15 +73,29 @@ CREATE TABLE "Productos" (
     "id" SERIAL NOT NULL,
     "nombre" TEXT NOT NULL,
     "descripcion" TEXT NOT NULL,
-    "precio" DOUBLE PRECISION NOT NULL,
+    "precioProducto" DOUBLE PRECISION NOT NULL,
+    "precioServicio" DOUBLE PRECISION NOT NULL,
     "stock" INTEGER NOT NULL,
+    "moneda" "Moneda" NOT NULL DEFAULT 'Bs',
+    "tiempoServicioHoras" DOUBLE PRECISION NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "idUnidadDeMedida" INTEGER NOT NULL,
-    "esVendible" BOOLEAN NOT NULL,
+    "seVende" BOOLEAN NOT NULL,
     "esServicio" BOOLEAN NOT NULL,
+    "esProducto" BOOLEAN NOT NULL,
 
     CONSTRAINT "Productos_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "ProductosEmbeddings" (
+    "idProducto" INTEGER NOT NULL,
+    "NombreProducto" TEXT NOT NULL,
+    "Descripcion" TEXT NOT NULL,
+    "Embedding" vector(3) NOT NULL,
+
+    CONSTRAINT "ProductosEmbeddings_pkey" PRIMARY KEY ("idProducto")
 );
 
 -- CreateTable
@@ -199,6 +220,9 @@ ALTER TABLE "Contrato" ADD CONSTRAINT "Contrato_idCliente_fkey" FOREIGN KEY ("id
 
 -- AddForeignKey
 ALTER TABLE "Productos" ADD CONSTRAINT "Productos_idUnidadDeMedida_fkey" FOREIGN KEY ("idUnidadDeMedida") REFERENCES "UnidadDeMedida"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "ProductosEmbeddings" ADD CONSTRAINT "ProductosEmbeddings_idProducto_fkey" FOREIGN KEY ("idProducto") REFERENCES "Productos"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "StockPorFecha" ADD CONSTRAINT "StockPorFecha_idProducto_fkey" FOREIGN KEY ("idProducto") REFERENCES "Productos"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

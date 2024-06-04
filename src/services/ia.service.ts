@@ -1,13 +1,14 @@
 import { APIError } from "groq-sdk";
-import grok from "../objects/ia.object";
+import groq from "../objects/ia.object";
 import { HttpException } from "../utils";
+import { srvInsertarMensajeChat } from "./chat.service";
 
 export const srvIASend = async (
   name: string,
   content: string,
   chatHistory: Array<any>
 ) => {
-  const completion = await grok.chat.completions.create({
+  const completion = await groq.chat.completions.create({
     messages: [
       {
         role: "system",
@@ -43,3 +44,66 @@ export const srvIASend = async (
   });
   return completion;
 };
+
+// const systemMessage = [
+//   {
+//     role: "system",
+//     content: `Eres una IA que pricipalmente vende servicios y productos de Weeding Planner, pero también vende servicios y productos individuales.
+//     No debes especificar las cantidades de los productos o servicios existentes, en su lugar, consulta al usuario de manera educada cuántos desea.
+//     En caso de que consulten por un producto o servicio que no exista, debes responder que no se encuentra disponible y ofrecer productos o servicios similares.`,
+//   },
+// ];
+
+type CompletionMessageType = {
+  role: string;
+  content: string;
+};
+
+export async function completarChat(
+  whatsappNumber: string,
+  nombreUsuario: string,
+  systemTemplate: CompletionMessageType[],
+  historialChat: CompletionMessageType[]
+) {
+  // const messages: CompletionMessageType[] = [];
+
+  // console.log({ messages });
+  const messages = systemTemplate.concat(historialChat);
+
+  const chatCompletion = await groq.chat.completions.create({
+    messages,
+    model: "mixtral-8x7b-32768",
+    temperature: 0,
+    max_tokens: 150,
+    top_p: 0,
+    stream: false,
+    stop: null,
+    user: nombreUsuario,
+  });
+
+  const chat = await srvInsertarMensajeChat(
+    { role: "assistant", content: chatCompletion.choices[0].message.content },
+    whatsappNumber,
+    nombreUsuario
+  );
+
+  console.log({ chat });
+
+  // console.log(
+  //   require("util").inspect(
+  //     { chatCompletion: chatCompletion.choices[0].message.content, chat },
+  //     {
+  //       depth: null,
+  //     }
+  //   )
+  // );
+
+  // console.log({
+  //   messages,
+  //   chatCompletion: chatCompletion.choices[0].message.content,
+  // });
+
+  return chatCompletion;
+}
+
+// main();

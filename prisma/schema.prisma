@@ -5,41 +5,45 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  extensions = [vector]
 }
 
-enum Remitente {
-  Cliente
-  IA
+enum Role {
+  user
+  system
+  assistant
 }
 
 model Chat {
   id        Int      @id @default(autoincrement())
-  mensaje   String
+  content   String
   createdAt DateTime @default(now())
 
-  remitente Remitente
+  role Role
 
   idCliente Int
   cliente   Cliente @relation(fields: [idCliente], references: [id])
 }
 
 model Cliente {
-  id             Int      @id @default(autoincrement())
+  id             Int     @id @default(autoincrement())
   nombre         String?
   apellido       String?
   telefono       String?
   email          String?
   direccion      String?
-  whatsappNumber String   @unique
+  whatsappNumber String  @unique
   profileName    String
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   Chat       Chat[]
   Cotizacion Cotizacion[]
@@ -72,28 +76,38 @@ model Contrato {
 }
 
 model UnidadDeMedida {
-  id          Int    @id @default(autoincrement())
-  nombre      String
-  abreviatura String
-  descripcion String
+  id           Int    @id @default(autoincrement())
+  nombre       String
+  nombrePlural String
+  abreviatura  String
+  descripcion  String
 
   Productos Productos[]
 }
 
+enum Moneda {
+  USD
+  Bs
+}
+
 model Productos {
-  id          Int      @id @default(autoincrement())
-  nombre      String   @unique
-  descripcion String
-  precio      Float
-  stock       Int
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id                  Int      @id @default(autoincrement())
+  nombre              String   @unique
+  descripcion         String
+  precioProducto      Float
+  precioServicio      Float
+  stock               Int
+  moneda              Moneda   @default(Bs)
+  tiempoServicioHoras Float
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
 
   idUnidadDeMedida Int
   unidadDeMedida   UnidadDeMedida @relation(fields: [idUnidadDeMedida], references: [id])
 
-  esVendible Boolean
+  seVende    Boolean
   esServicio Boolean
+  esProducto Boolean
 
   StockPorFecha                           StockPorFecha[]
   DetalleDeCategoriaDeProductos           DetalleDeCategoriaDeProductos[]
@@ -102,6 +116,19 @@ model Productos {
   DetalleJuegoDeProductos                 DetalleJuegoDeProductos[]
   DetalleProductosIndividualesCotizados   DetalleProductosIndividualesCotizados[]
   DetalleProductosIndividualesContratados DetalleProductosIndividualesContratados[]
+  ProductosEmbeddings                     ProductosEmbeddings[]
+}
+
+model ProductosEmbeddings {
+  idProducto     Int                      @id
+  NombreProducto String
+  Descripcion    String
+  // Embedding      Unsupported("vector(1536)")?
+  Embedding      Unsupported("vector(3)")
+
+  productos Productos @relation(fields: [idProducto], references: [id])
+
+  // @@id([idProducto])
 }
 
 model StockPorFecha {
