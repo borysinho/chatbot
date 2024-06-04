@@ -63,9 +63,9 @@ export const generarEmbeddingsProductos = async () => {
     // console.log({ productoEmbedding });
 
     if (productoEmbedding === null) {
-      // const { embedding } = (await obtenerEmbedding(detalle)).data[0];
+      const { embedding } = (await obtenerEmbedding(detalle)).data[0];
       // console.log(require("util").inspect({ embedding }, { depth: null }));
-      const embedding = [0.63930345, 0.45545435, 0.61955833];
+      // const embedding = [0.63930345, 0.45545435, 0.61955833];
       //       (${producto.id}, ${producto.nombre}, ${detalle}, ${embedding}::vector)`;
       await prisma.$executeRaw`INSERT INTO "ProductosEmbeddings" ("idProducto", "NombreProducto", "Descripcion", "Embedding") VALUES
         (${producto.id}, ${producto.nombre}, ${detalle}, ${embedding}::vector)`;
