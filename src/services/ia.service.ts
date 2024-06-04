@@ -81,28 +81,6 @@ export async function completarChat(
     user: nombreUsuario,
   });
 
-  const chat = await srvInsertarMensajeChat(
-    { role: "assistant", content: chatCompletion.choices[0].message.content },
-    whatsappNumber,
-    nombreUsuario
-  );
-
-  console.log({ chat });
-
-  // console.log(
-  //   require("util").inspect(
-  //     { chatCompletion: chatCompletion.choices[0].message.content, chat },
-  //     {
-  //       depth: null,
-  //     }
-  //   )
-  // );
-
-  // console.log({
-  //   messages,
-  //   chatCompletion: chatCompletion.choices[0].message.content,
-  // });
-
   return chatCompletion;
 }
 

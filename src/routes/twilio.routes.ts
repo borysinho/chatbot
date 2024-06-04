@@ -14,11 +14,19 @@ class TwilioRoutes {
       res.send("Hello World!");
     });
     this.router.post("/ia", newMessage);
+    // this.router.post("/ia", (req, res) => {
+    //   console.log("ok");
+    //   res.send("OK");
+    // });
     this.router.get("/statuscallback", (req, res) => {
       console.log({ CallBack: req.body });
       res.send("OK");
     });
     this, this.router.post("/testia", ctrlSendMessage);
+
+    //     this.router.post("/twilio", (req, res) => {
+    //       console.log({ Body: req.body });
+    //       res.send("
   }
 }
 

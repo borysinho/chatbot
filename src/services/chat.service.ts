@@ -87,7 +87,7 @@ export const srvInsertarMensajeChat = async (
     },
   });
 
-  // console.log({ mensajeInsertado });
+  console.log({ mensajeInsertado });
 
   const mensajes = await prisma.chat.findMany({
     where: {
@@ -102,6 +102,10 @@ export const srvInsertarMensajeChat = async (
     },
     take: 4,
   });
+
+  console.log({ mensajes });
+
+  //TODO ARREGLAR LA DIMENSION DEL VECTOR
 
   return mensajes;
 };

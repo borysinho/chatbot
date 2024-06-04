@@ -5,6 +5,21 @@ import { v4 as uuidv4 } from "uuid";
 import * as cloudinary from "cloudinary";
 import { AssemblyAI } from "assemblyai";
 
+import twilioClient from "../objects/twilio.object";
+
+export const sendWhatsappMessage = async (to: string, body: string) => {
+  const data = {
+    from: `whatsapp:+${process.env.TWILIO_FROM_NUMBER}`,
+    body,
+    to: `whatsapp:+${to}`,
+  };
+  console.log({ data });
+
+  twilioClient.messages
+    .create(data)
+    .then((message) => console.log("Mensaje Enviado. sid:" + message.sid));
+};
+
 export const ListMessagesFromNumber = (number: string) => {
   const accountSid = process.env.TWILIO_ACCOUNT_SID;
   const authToken = process.env.TWILIO_AUTH_TOKEN;

@@ -83,7 +83,7 @@ export const obtenerSimilitudesSemanticas = async (embedding: number[]) => {
   // console.log({ embeddingSQL });
 
   const similitudes: ProductosEmbeddings[] = await prisma.$queryRaw`
-  SELECT "idProducto", "NombreProducto", "Descripcion", "Embedding"::text FROM "ProductosEmbeddings" ORDER BY "Embedding" <-> ${embeddingSQL}::vector LIMIT 5`;
+  SELECT "idProducto", "NombreProducto", "Descripcion", "Embedding"::text FROM "ProductosEmbeddings" ORDER BY "Embedding" <-> ${embeddingSQL}::vector LIMIT 2`;
   // -- ORDER BY "Embedding" <-> ${embeddingSQL}::vector LIMIT 5`;
 
   // const similitudes = await prisma.$queryRaw`

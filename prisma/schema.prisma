@@ -123,12 +123,9 @@ model ProductosEmbeddings {
   idProducto     Int                      @id
   NombreProducto String
   Descripcion    String
-  // Embedding      Unsupported("vector(1536)")?
   Embedding      Unsupported("vector(3)")
 
   productos Productos @relation(fields: [idProducto], references: [id])
-
-  // @@id([idProducto])
 }
 
 model StockPorFecha {

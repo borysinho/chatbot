@@ -1,15 +1,4 @@
-// import { Productos } from "@prisma/client";
-// import pgvector from "pgvector";
-// import prisma from "../objects/prisma.object";
-// import { getFormatedDate } from "./dates.utils";
 import groq from "../objects/ia.object";
-// import {
-//   generarEmbeddingsProductos,
-//   completarChat,
-//   obtenerEmbedding,
-//   obtenerSimilitudesSemanticas,
-//   srvInsertarMensajeChat,
-// } from "../services";
 
 type CompletionMessageType = {
   role: string;
@@ -62,19 +51,3 @@ const getGroqChatCompletion = async (
     // stream: false,
   });
 };
-
-// while (true) {
-//   const readline = require("node:readline");
-
-//   const rl = readline.createInterface({
-//     input: process.stdin,
-//     output: process.stdout,
-//   });
-
-//   rl.question(`What's your name?`, (name: string) => {
-//     console.log(`Hi ${name}!`);
-//     rl.close();
-//   });
-// }
-
-// test("Buen día, estoy buscando sillas", "59177685777", "Borys Quiroga");
