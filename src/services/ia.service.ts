@@ -74,7 +74,7 @@ export async function completarChat(
     messages,
     model: "mixtral-8x7b-32768",
     temperature: 0,
-    max_tokens: 1000,
+    max_tokens: 300,
     top_p: 0,
     stream: false,
     stop: null,
