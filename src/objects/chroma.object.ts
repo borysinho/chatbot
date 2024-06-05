@@ -1,3 +1,3 @@
-import { ChromaClient } from "chromadb";
+// import { ChromaClient } from "chromadb";
 
-export default new ChromaClient();
+// export default new ChromaClient();
