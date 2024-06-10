@@ -10,19 +10,6 @@ import embeddingsEndPoint from "../objects/embeddings.object";
 // } from "./juego.productos.service";
 // import { srvGetcaracteristicas } from "./caracteristicas.service";
 // import { srvGetstockPorFecha } from "./stock.por.fecha.service";
-import {
-  TProductos,
-  srvGetFullProductos,
-  srvGetProductos,
-} from "./db/producto.service";
-import {
-  TCaracteristica,
-  srvGetcaracteristicas,
-} from "./db/caracteristicas.service";
-import { srvGetstockPorFecha } from "./db/stock.por.fecha.service";
-import { $Enums, Caracteristicas, Prisma, Productos } from "@prisma/client";
-import { log } from "console";
-import { getFormatedDate } from "../utils";
 
 export async function obtenerEmbedding(input: string) {
   const endPoint = await embeddingsEndPoint.embeddings.create({
@@ -268,80 +255,78 @@ export async function obtenerEmbedding(input: string) {
 //   //Filtrar [id, nombre, caracteristicas]
 // };
 
-const parseProdServCaractToString = async (
-  productos: TProductos[],
-  caracteristicas: TCaracteristica[]
-) => {
-  let productoText: string[] = [];
+const parseProdServCaractToString = async () =>
+  // productos: TProductos[],
+  // caracteristicas: TCaracteristica[]
+  {
+    let productoText: string[] = [];
 
-  // const productosALaVenta = productos
-  //   .filter((producto) => producto.seVendeComoProducto)
-  //   .map((productoVendible) => {
-  //     `Producto "${productoVendible.nombre} disponible para la venta". ${
-  //       productoVendible.descripcion
-  //     }. Sus características son: ${caracteristicas
-  //       .filter(
-  //         (caracteristica) => productoVendible.id === caracteristica.idProducto
-  //       )
-  //       .map(
-  //         (caracteristica) => `${caracteristica.nombre} ${caracteristica.valor}`
-  //       )
-  //       .join(", ")}`;
-  //   });
+    // const productosALaVenta = productos
+    //   .filter((producto) => producto.seVendeComoProducto)
+    //   .map((productoVendible) => {
+    //     `Producto "${productoVendible.nombre} disponible para la venta". ${
+    //       productoVendible.descripcion
+    //     }. Sus características son: ${caracteristicas
+    //       .filter(
+    //         (caracteristica) => productoVendible.id === caracteristica.idProducto
+    //       )
+    //       .map(
+    //         (caracteristica) => `${caracteristica.nombre} ${caracteristica.valor}`
+    //       )
+    //       .join(", ")}`;
+    //   });
 
-  const productosALaVenta = productos
-    .filter((producto) => producto.seVendeComoProducto)
-    .map((productoVendible) => {
-      const prodCaract = caracteristicas
-        .filter(
-          (caracteristica) => productoVendible.id === caracteristica.idProducto
-        )
-        .map(
-          (caracteristica) => `${caracteristica.nombre} ${caracteristica.valor}`
-        )
-        .join(", ");
-      return `Producto "${productoVendible.nombre}". ${
-        productoVendible.descripcion
-      }. Sus características son: ${prodCaract}`;
-    });
-  // console.log({ productosALaVenta });
-  return productosALaVenta;
+    // const productosALaVenta = productos
+    //   .filter((producto) => producto.seVendeComoProducto)
+    //   .map((productoVendible) => {
+    //     const prodCaract = caracteristicas
+    //       .filter(
+    //         (caracteristica) => productoVendible.id === caracteristica.idProducto
+    //       )
+    //       .map(
+    //         (caracteristica) => `${caracteristica.nombre} ${caracteristica.valor}`
+    //       )
+    //       .join(", ");
+    //     return `Producto "${productoVendible.nombre}". ${
+    //       productoVendible.descripcion
+    //     }. Sus características son: ${prodCaract}`;
+    //   });
+    // console.log({ productosALaVenta });
+    // return productosALaVenta;
 
-  // for (const producto of productos) {
-  //   const prodCaract = caracteristicas
-  //     .filter((caracteristica) => producto.id === caracteristica.idProducto)
-  //     .map((caracteristica) => `${caracteristica.nombre} ${caracteristica.valor}`).join(", ");
+    // for (const producto of productos) {
+    //   const prodCaract = caracteristicas
+    //     .filter((caracteristica) => producto.id === caracteristica.idProducto)
+    //     .map((caracteristica) => `${caracteristica.nombre} ${caracteristica.valor}`).join(", ");
 
-  //   productoText.push(`${producto.seVendeComoProducto ? "Servicio" : "Producto"} "${producto.nombre }". ${producto.descripcion}. Sus características son: ${prodCaract}`);
-  //   productoText.push(`${producto.esServicio ? "Servicio" : "Producto"} "${producto.nombre}". Precio: ${producto.precioProducto} ${producto.moneda}.`);
+    //   productoText.push(`${producto.seVendeComoProducto ? "Servicio" : "Producto"} "${producto.nombre }". ${producto.descripcion}. Sus características son: ${prodCaract}`);
+    //   productoText.push(`${producto.esServicio ? "Servicio" : "Producto"} "${producto.nombre}". Precio: ${producto.precioProducto} ${producto.moneda}.`);
 
-  //   if (producto.esServicio) {
-  //     // Agregar stock por fecha
-  //     const stock = stockPorFecha.filter((stock) => producto.id === stock.idProducto )
-  //       .map((stock) => `Para el ${getFormatedDate(stock.fecha)} ${stock.stock === 1 ? "queda solo" : "quedan"} ${stock.stock} ${stock.stock === 1 ? producto.unidadMedidaSingular : producto.unidadMedidaPlural}`)
-  //       .join(", ");
-  //     productoText.push(`Servicio ${producto.nombre}. Disponibilidades: ${stock}`)
-  //   } else {
+    //   if (producto.esServicio) {
+    //     // Agregar stock por fecha
+    //     const stock = stockPorFecha.filter((stock) => producto.id === stock.idProducto )
+    //       .map((stock) => `Para el ${getFormatedDate(stock.fecha)} ${stock.stock === 1 ? "queda solo" : "quedan"} ${stock.stock} ${stock.stock === 1 ? producto.unidadMedidaSingular : producto.unidadMedidaPlural}`)
+    //       .join(", ");
+    //     productoText.push(`Servicio ${producto.nombre}. Disponibilidades: ${stock}`)
+    //   } else {
 
-  //   }
-  //   // productoText.push(`${producto.esServicio ? "Servicio" : "Producto"} "${producto.nombre}". Stock: ${producto.stock} ${producto.stock}.`);
-  // }
-};
+    //   }
+    //   // productoText.push(`${producto.esServicio ? "Servicio" : "Producto"} "${producto.nombre}". Stock: ${producto.stock} ${producto.stock}.`);
+    // }
+  };
 
 export const srvLoadEmbeddingsProductos = async () => {
   // const productos = await srvGetFullProductos();
-  const productos = await srvGetProductos();
-  const caracteristicas = await srvGetcaracteristicas();
-
-  if (productos.length !== 0) {
-    // console.log({ productos });
-    const productosCaracteristicas = await parseProdServCaractToString(
-      productos,
-      caracteristicas
-    );
-
-    console.log({ productosCaracteristicas });
-  }
+  // const productos = await srvGetProductos();
+  // const caracteristicas = await srvGetcaracteristicas();
+  // if (productos.length !== 0) {
+  //   // console.log({ productos });
+  //   const productosCaracteristicas = await parseProdServCaractToString(
+  //     productos,
+  //     caracteristicas
+  //   );
+  //   console.log({ productosCaracteristicas });
+  // }
 };
 
 const test = async () => {

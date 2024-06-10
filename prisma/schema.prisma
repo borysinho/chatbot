@@ -8,112 +8,127 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model clientes {
+model Clientes {
   cliente_id        Int                 @id @default(autoincrement())
   nombre            String              @db.VarChar(255)
   email             String              @unique @db.VarChar(255)
   telefono          String?             @db.VarChar(20)
   direccion         String?
   fecha_registro    DateTime?           @default(now()) @db.Timestamp(6)
-  cotizaciones      cotizaciones[]
-  reservasservicios reservasservicios[]
-  ventas            ventas[]
+  cotizaciones      Cotizaciones[]
+  reservasservicios ReservasServicios[]
+  ventas            Ventas[]
 }
 
-model cotizaciones {
+model Cotizaciones {
   cotizacion_id        Int                              @id @default(autoincrement())
   cliente_id           Int?
   fecha_cotizacion     DateTime?                        @default(now()) @db.Timestamp(6)
   total                Decimal                          @db.Decimal(10, 2)
-  estatus              pendienteaprobadarechazada_enum? @default(Pendiente)
-  clientes             clientes?                        @relation(fields: [cliente_id], references: [cliente_id], onDelete: NoAction, onUpdate: NoAction)
-  detallescotizaciones detallescotizaciones[]
-  ventas               ventas[]
+  estatus              PendienteAprobadaRechazada_enum? @default(Pendiente)
+  clientes             Clientes?                        @relation(fields: [cliente_id], references: [cliente_id], onDelete: NoAction, onUpdate: NoAction)
+  detallescotizaciones DetallesCotizaciones[]
+  ventas               Ventas[]
 }
 
-/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
-model detallescotizaciones {
+model DetallesCotizaciones {
   detalle_cotizacion_id Int                          @id @default(autoincrement())
   cotizacion_id         Int
-  tipo_item             productoserviciopaquete_enum
-  item_id               Int
+  tipo_item             ProductoServicioPaquete_enum
   cantidad              Int
   precio_unitario       Decimal                      @db.Decimal(10, 2)
   subtotal              Decimal                      @db.Decimal(10, 2)
-  cotizaciones          cotizaciones                 @relation(fields: [cotizacion_id], references: [cotizacion_id], onDelete: Cascade, onUpdate: NoAction)
-  paquetes              paquetes                     @relation(fields: [item_id], references: [paquete_id], onDelete: Cascade, onUpdate: NoAction, map: "fk_detallescotizaciones_paquetes")
-  productos             productos                    @relation(fields: [item_id], references: [producto_id], onDelete: Cascade, onUpdate: NoAction, map: "fk_detallescotizaciones_productos")
-  servicios             servicios                    @relation(fields: [item_id], references: [servicio_id], onDelete: Cascade, onUpdate: NoAction, map: "fk_detallescotizaciones_servicios")
+
+  paquete_id  Int?
+  producto_id Int?
+  servicio_id Int?
+
+  cotizaciones Cotizaciones @relation(fields: [cotizacion_id], references: [cotizacion_id], onDelete: Cascade, onUpdate: NoAction)
+  paquetes     Paquetes?    @relation(fields: [paquete_id], references: [paquete_id], onDelete: Cascade, onUpdate: NoAction)
+  productos    Productos?   @relation(fields: [producto_id], references: [producto_id], onDelete: Cascade, onUpdate: NoAction)
+  servicios    Servicios?   @relation(fields: [servicio_id], references: [servicio_id], onDelete: Cascade, onUpdate: NoAction)
 }
 
-model detallesproducciondemandada {
+model DetallesProduccionDemandada {
   detalle_produccion_id Int                  @id @default(autoincrement())
   produccion_id         Int?
   producto_id           Int?
   cantidad              Int
-  producciondemandada   producciondemandada? @relation(fields: [produccion_id], references: [produccion_id], onDelete: NoAction, onUpdate: NoAction)
-  productos             productos?           @relation(fields: [producto_id], references: [producto_id], onDelete: NoAction, onUpdate: NoAction)
+  producciondemandada   ProduccionDemandada? @relation(fields: [produccion_id], references: [produccion_id], onDelete: NoAction, onUpdate: NoAction)
+  productos             Productos?           @relation(fields: [producto_id], references: [producto_id], onDelete: NoAction, onUpdate: NoAction)
 }
 
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
-model detallesventas {
+model DetallesVentas {
   detalle_venta_id Int                          @id @default(autoincrement())
   venta_id         Int
-  tipo_item        productoserviciopaquete_enum
-  item_id          Int
+  tipo_item        ProductoServicioPaquete_enum
   cantidad         Int
   precio_unitario  Decimal                      @db.Decimal(10, 2)
   subtotal         Decimal                      @db.Decimal(10, 2)
-  ventas           ventas                       @relation(fields: [venta_id], references: [venta_id], onDelete: Cascade, onUpdate: NoAction)
-  paquetes         paquetes                     @relation(fields: [item_id], references: [paquete_id], onDelete: Cascade, onUpdate: NoAction, map: "fk_detallesventas_paquetes")
-  productos        productos                    @relation(fields: [item_id], references: [producto_id], onDelete: Cascade, onUpdate: NoAction, map: "fk_detallesventas_productos")
-  servicios        servicios                    @relation(fields: [item_id], references: [servicio_id], onDelete: Cascade, onUpdate: NoAction, map: "fk_detallesventas_servicios")
+
+  paquete_id  Int?
+  producto_id Int?
+  servicio_id Int?
+
+  ventas    Ventas     @relation(fields: [venta_id], references: [venta_id], onDelete: Cascade, onUpdate: NoAction)
+  paquetes  Paquetes?  @relation(fields: [paquete_id], references: [paquete_id], onDelete: Cascade, onUpdate: NoAction)
+  productos Productos? @relation(fields: [producto_id], references: [producto_id], onDelete: Cascade, onUpdate: NoAction)
+  servicios Servicios? @relation(fields: [servicio_id], references: [servicio_id], onDelete: Cascade, onUpdate: NoAction)
 }
 
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
-model disponibilidadgeneral {
+model DisponibilidadGeneral {
   disponibilidad_id   Int                   @id @default(autoincrement())
-  tipo_item           productoservicio_enum
-  item_id             Int
+  tipo_item           ProductoServicio_enum
   fecha               DateTime              @db.Date
   cantidad_disponible Int
-  productos           productos             @relation(fields: [item_id], references: [producto_id], onDelete: Cascade, onUpdate: NoAction)
-  servicios           servicios             @relation(fields: [item_id], references: [servicio_id], onDelete: Cascade, onUpdate: NoAction, map: "disponibilidadgeneral_item_id_fkey1")
 
-  @@unique([tipo_item, item_id, fecha])
+  producto_id Int?
+  servicio_id Int?
+
+  productos Productos? @relation(fields: [producto_id], references: [producto_id], onDelete: Cascade, onUpdate: NoAction)
+  servicios Servicios? @relation(fields: [servicio_id], references: [servicio_id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([tipo_item, producto_id, servicio_id, fecha])
 }
 
-model elementospaquetes {
+model ElementosPaquetes {
   elemento_paquete_id Int                   @id @default(autoincrement())
-  paquete_id          Int?
-  tipo_item           productoservicio_enum
-  item_id             Int?
+  paquete_id          Int
+  tipo_elemento       ProductoServicio_enum
   cantidad            Int
-  paquetes            paquetes?             @relation(fields: [paquete_id], references: [paquete_id], onDelete: NoAction, onUpdate: NoAction)
+
+  producto_id Int?
+  servicio_id Int?
+
+  paquetes  Paquetes?  @relation(fields: [paquete_id], references: [paquete_id], onDelete: Cascade, onUpdate: NoAction)
+  productos Productos? @relation(fields: [producto_id], references: [producto_id], onDelete: Cascade, onUpdate: NoAction)
+  servicios Servicios? @relation(fields: [servicio_id], references: [servicio_id], onDelete: Cascade, onUpdate: NoAction)
 }
 
-model paquetes {
+model Paquetes {
   paquete_id           Int                    @id @default(autoincrement())
   nombre               String                 @db.VarChar(255)
   descripcion          String?
   precio               Decimal                @db.Decimal(10, 2)
   fecha_creacion       DateTime?              @default(now()) @db.Timestamp(6)
-  detallescotizaciones detallescotizaciones[]
-  detallesventas       detallesventas[]
-  elementospaquetes    elementospaquetes[]
+  detallescotizaciones DetallesCotizaciones[]
+  detallesventas       DetallesVentas[]
+  elementospaquetes    ElementosPaquetes[]
 }
 
-model producciondemandada {
+model ProduccionDemandada {
   produccion_id               Int                                         @id @default(autoincrement())
   venta_id                    Int?
   fecha_solicitud             DateTime?                                   @default(now()) @db.Timestamp(6)
   fecha_entrega               DateTime?                                   @db.Date
-  estatus                     pendienteenprocesocompletadacancelada_enum? @default(Pendiente)
-  detallesproducciondemandada detallesproducciondemandada[]
-  ventas                      ventas?                                     @relation(fields: [venta_id], references: [venta_id], onDelete: NoAction, onUpdate: NoAction)
+  estatus                     PendienteEnProcesoCompletadaCancelada_enum? @default(Pendiente)
+  detallesproducciondemandada DetallesProduccionDemandada[]
+  ventas                      Ventas?                                     @relation(fields: [venta_id], references: [venta_id], onDelete: NoAction, onUpdate: NoAction)
 }
 
-model productos {
+model Productos {
   producto_id                 Int                           @id @default(autoincrement())
   nombre                      String                        @db.VarChar(255)
   descripcion                 String?
@@ -121,13 +136,14 @@ model productos {
   moneda                      String?                       @default("BS") @db.VarChar(3)
   stock                       Int
   fecha_creacion              DateTime?                     @default(now()) @db.Timestamp(6)
-  detallescotizaciones        detallescotizaciones[]
-  detallesproducciondemandada detallesproducciondemandada[]
-  detallesventas              detallesventas[]
-  disponibilidadgeneral       disponibilidadgeneral[]
+  detallescotizaciones        DetallesCotizaciones[]
+  detallesproducciondemandada DetallesProduccionDemandada[]
+  detallesventas              DetallesVentas[]
+  disponibilidadgeneral       DisponibilidadGeneral[]
+  elementospaquetes           ElementosPaquetes[]
 }
 
-model reservasservicios {
+model ReservasServicios {
   reserva_id  Int                                @id @default(autoincrement())
   venta_id    Int?
   cliente_id  Int?
@@ -135,13 +151,13 @@ model reservasservicios {
   fecha       DateTime?                          @db.Date
   hora        DateTime?                          @db.Time(6)
   cantidad    Int
-  estatus     pendienteconfirmadacancelada_enum? @default(Pendiente)
-  clientes    clientes?                          @relation(fields: [cliente_id], references: [cliente_id], onDelete: NoAction, onUpdate: NoAction)
-  servicios   servicios?                         @relation(fields: [servicio_id], references: [servicio_id], onDelete: NoAction, onUpdate: NoAction)
-  ventas      ventas?                            @relation(fields: [venta_id], references: [venta_id], onDelete: NoAction, onUpdate: NoAction)
+  estatus     PendienteConfirmadaCancelada_enum? @default(Pendiente)
+  clientes    Clientes?                          @relation(fields: [cliente_id], references: [cliente_id], onDelete: NoAction, onUpdate: NoAction)
+  servicios   Servicios?                         @relation(fields: [servicio_id], references: [servicio_id], onDelete: NoAction, onUpdate: NoAction)
+  ventas      Ventas?                            @relation(fields: [venta_id], references: [venta_id], onDelete: NoAction, onUpdate: NoAction)
 }
 
-model servicios {
+model Servicios {
   servicio_id           Int                     @id @default(autoincrement())
   nombre                String                  @db.VarChar(255)
   descripcion           String?
@@ -149,50 +165,51 @@ model servicios {
   moneda                String?                 @default("BS") @db.VarChar(3)
   duracion              Int
   fecha_creacion        DateTime?               @default(now()) @db.Timestamp(6)
-  detallescotizaciones  detallescotizaciones[]
-  detallesventas        detallesventas[]
-  disponibilidadgeneral disponibilidadgeneral[]
-  reservasservicios     reservasservicios[]
+  detallescotizaciones  DetallesCotizaciones[]
+  detallesventas        DetallesVentas[]
+  disponibilidadgeneral DisponibilidadGeneral[]
+  elementospaquetes     ElementosPaquetes[]
+  reservasservicios     ReservasServicios[]
 }
 
-model ventas {
+model Ventas {
   venta_id            Int                   @id @default(autoincrement())
   cliente_id          Int?
   fecha_venta         DateTime?             @default(now()) @db.Timestamp(6)
   total               Decimal               @db.Decimal(10, 2)
   cotizacion_id       Int?
-  detallesventas      detallesventas[]
-  producciondemandada producciondemandada[]
-  reservasservicios   reservasservicios[]
-  clientes            clientes?             @relation(fields: [cliente_id], references: [cliente_id], onDelete: NoAction, onUpdate: NoAction)
-  cotizaciones        cotizaciones?         @relation(fields: [cotizacion_id], references: [cotizacion_id], onDelete: NoAction, onUpdate: NoAction)
+  detallesventas      DetallesVentas[]
+  producciondemandada ProduccionDemandada[]
+  reservasservicios   ReservasServicios[]
+  clientes            Clientes?             @relation(fields: [cliente_id], references: [cliente_id], onDelete: NoAction, onUpdate: NoAction)
+  cotizaciones        Cotizaciones?         @relation(fields: [cotizacion_id], references: [cotizacion_id], onDelete: NoAction, onUpdate: NoAction)
 }
 
-enum pendienteaprobadarechazada_enum {
+enum PendienteAprobadaRechazada_enum {
   Pendiente
   Aprobada
   Rechazada
 }
 
-enum pendienteconfirmadacancelada_enum {
+enum PendienteConfirmadaCancelada_enum {
   Pendiente
   Confirmada
   Cancelada
 }
 
-enum pendienteenprocesocompletadacancelada_enum {
+enum PendienteEnProcesoCompletadaCancelada_enum {
   Pendiente
   En_Proceso @map("En Proceso")
   Completada
   Cancelada
 }
 
-enum productoservicio_enum {
+enum ProductoServicio_enum {
   Producto
   Servicio
 }
 
-enum productoserviciopaquete_enum {
+enum ProductoServicioPaquete_enum {
   Producto
   Servicio
   Paquete

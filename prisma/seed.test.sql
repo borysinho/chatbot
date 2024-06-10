@@ -14,7 +14,8 @@ CREATE TABLE Servicios (
     descripcion TEXT,
     tarifa DECIMAL(10, 2) NOT NULL,
     moneda VARCHAR(3) DEFAULT 'BS',
-    duracion INT NOT NULL, -- duración en minutos, por ejemplo
+    -- duración en minutos, por ejemplo
+    duracion INT NOT NULL, 
     fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -77,12 +78,15 @@ CREATE TABLE DetallesVentas (
 CREATE TYPE ProductoServicio_Enum AS ENUM ('Producto', 'Servicio');
 
 CREATE TABLE ElementosPaquetes (
-    elemento_paquete_id SERIAL PRIMARY KEY ,
-    paquete_id INT,
-    tipo_item ProductoServicio_Enum NOT NULL,
-    item_id INT,
+    elemento_paquete_id SERIAL PRIMARY KEY,
+    paquete_id INT NOT NULL,
+    tipo_elemento ProductoServicio_Enum NOT NULL,
+    elemento_id INT NOT NULL,
     cantidad INT NOT NULL,
-    FOREIGN KEY (paquete_id) REFERENCES Paquetes(paquete_id)
+    FOREIGN KEY (paquete_id) REFERENCES Paquetes(paquete_id) ON DELETE CASCADE,
+    CHECK (tipo_elemento IN ('Producto', 'Servicio')),
+    CONSTRAINT FK_ElementosPaquetes_Productos FOREIGN KEY (elemento_id) REFERENCES Productos(producto_id) ON DELETE CASCADE,
+    CONSTRAINT FK_ElementosPaquetes_Servicios FOREIGN KEY (elemento_id) REFERENCES Servicios(servicio_id) ON DELETE CASCADE
 );
 
 
@@ -199,125 +203,173 @@ INSERT INTO Paquetes (nombre, descripcion, precio) VALUES
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
 -- ElementosPaquetes
-INSERT INTO ElementosPaquetes (paquete_id, tipo_item, item_id, cantidad) VALUES
-
-(1, 'Servicio', 1, 1),	-- Coordinación del Día de la Boda
-(1, 'Producto', 1, 10), -- Centro de Mesa Floral
+INSERT INTO "ElementosPaquetes" (paquete_id, tipo_elemento, cantidad, producto_id, servicio_id) VALUES
+-- Paquete Esencial
+-- Coordinación del Día de la Boda
+(1, 'Servicio', 1, NULL, 1), 
+-- Centro de Mesa Floral
+(1, 'Producto', 10, 1, NULL), 
 
 -- Paquete Romántico
-(2, 'Producto', 2, 50), -- Vela Aromática de Lavanda
-(2, 'Producto', 1, 10), -- Centro de Mesa Floral
+-- Vela Aromática de Lavanda
+(2, 'Producto', 50, 2, NULL), 
+-- Centro de Mesa Floral
+(2, 'Producto', 10, 1, NULL), 
 
 -- Paquete Elegante
-(3, 'Producto', 3, 100), -- Invitaciones Personalizadas
-(3, 'Producto', 4, 1), -- Libro de Firmas
-(3, 'Producto', 6, 1), -- Cojines para Anillos
+-- Invitaciones Personalizadas
+(3, 'Producto', 100, 3, NULL), 
+-- Libro de Firmas
+(3, 'Producto', 1, 4, NULL), 
+-- Cojines para Anillos
+(3, 'Producto', 1, 6, NULL), 
 
 -- Paquete Floral
-(4, 'Producto', 1, 20), -- Centro de Mesa Floral
-(4, 'Producto', 5, 1), -- Arco Floral
-(4, 'Producto', 8, 50), -- Confeti Biodegradable
+-- Centro de Mesa Floral
+(4, 'Producto', 20, 1, NULL), 
+-- Arco Floral
+(4, 'Producto', 1, 5, NULL), 
+-- Confeti Biodegradable
+(4, 'Producto', 50, 8, NULL), 
 
 -- Paquete Fotografía y Video
-(5, 'Servicio', 5, 1), -- Fotografía y Video Profesional
+-- Fotografía y Video Profesional
+(5, 'Servicio', 1, NULL, 5), 
 
 -- Paquete Musical
-(6, 'Servicio', 6, 1), -- Música y Entretenimiento en Vivo
-(6, 'Servicio', 5, 1), -- Fotografía y Video Profesional
+-- Música y Entretenimiento en Vivo
+(6, 'Servicio', 1, NULL, 6), 
+-- Fotografía y Video Profesional
+(6, 'Servicio', 1, NULL, 5), 
 
 -- Paquete Gourmet
-(7, 'Servicio', 4, 1), -- Servicio de Catering Gourmet
+-- Servicio de Catering Gourmet
+(7, 'Servicio', 1, NULL, 4), 
 
 -- Paquete Transporte
-(8, 'Servicio', 8, 2), -- Transporte de Invitados
+-- Transporte de Invitados
+(8, 'Servicio', 2, NULL, 8), 
 
 -- Paquete Completo
-(9, 'Servicio', 2, 1), -- Planificación Completa de la Boda
-(9, 'Servicio', 4, 1), -- Servicio de Catering Gourmet
-(9, 'Servicio', 5, 1), -- Fotografía y Video Profesional
-(9, 'Servicio', 6, 1), -- Música y Entretenimiento en Vivo
-(9, 'Servicio', 8, 2), -- Transporte de Invitados
+-- Planificación Completa de la Boda
+(9, 'Servicio', 1, NULL, 2), 
+-- Servicio de Catering Gourmet
+(9, 'Servicio', 1, NULL, 4), 
+-- Fotografía y Video Profesional
+(9, 'Servicio', 1, NULL, 5), 
+-- Música y Entretenimiento en Vivo
+(9, 'Servicio', 1, NULL, 6), 
+-- Transporte de Invitados
+(9, 'Servicio', 2, NULL, 8), 
 
 -- Paquete Económico
-(10, 'Servicio', 1, 1), -- Coordinación del Día de la Boda
-(10, 'Producto', 1, 5), -- Centro de Mesa Floral
+-- Coordinación del Día de la Boda
+(10, 'Servicio', 1, NULL, 1), 
+-- Centro de Mesa Floral
+(10, 'Producto', 5, 1, NULL), 
 
 -- Paquete Ceremonia
-(11, 'Servicio', 9, 1), -- Ceremonia Civil y Religiosa
-(11, 'Producto', 5, 1), -- Arco Floral
+-- Ceremonia Civil y Religiosa
+(11, 'Servicio', 1, NULL, 9), 
+-- Arco Floral
+(11, 'Producto', 1, 5, NULL), 
 
 -- Paquete Luna de Miel
-(12, 'Servicio', 10, 1), -- Planificación de la Luna de Miel
-(12, 'Servicio', 7, 1), -- Asesoría de Estilo para los Novios
+-- Planificación de la Luna de Miel
+(12, 'Servicio', 1, NULL, 10), 
+-- Asesoría de Estilo para los Novios
+(12, 'Servicio', 1, NULL, 7), 
 
 -- Paquete Deluxe
-(13, 'Servicio', 2, 1), -- Planificación Completa de la Boda
-(13, 'Servicio', 4, 1), -- Servicio de Catering Gourmet
-(13, 'Servicio', 5, 1), -- Fotografía y Video Profesional
-(13, 'Servicio', 6, 1), -- Música y Entretenimiento en Vivo
-(13, 'Servicio', 8, 2), -- Transporte de Invitados
-(13, 'Producto', 1, 20), -- Centro de Mesa Floral
-(13, 'Producto', 5, 2), -- Arco Floral
+-- Planificación Completa de la Boda
+(13, 'Servicio', 1, NULL, 2), 
+-- Servicio de Catering Gourmet
+(13, 'Servicio', 1, NULL, 4), 
+-- Fotografía y Video Profesional
+(13, 'Servicio', 1, NULL, 5), 
+-- Música y Entretenimiento en Vivo
+(13, 'Servicio', 1, NULL, 6), 
+-- Transporte de Invitados
+(13, 'Servicio', 2, NULL, 8), 
+-- Centro de Mesa Floral
+(13, 'Producto', 20, 1, NULL), 
+-- Arco Floral
+(13, 'Producto', 2, 5, NULL), 
 
 -- Paquete Decoración
-(14, 'Producto', 1, 30), -- Centro de Mesa Floral
-(14, 'Producto', 7, 1), -- Letras Gigantes LOVE
+-- Centro de Mesa Floral
+(14, 'Producto', 30, 1, NULL), 
+-- Letras Gigantes LOVE
+(14, 'Producto', 1, 7, NULL), 
 
 -- Paquete Infantil
-(15, 'Producto', 9, 100), -- Vasos Personalizados
-(15, 'Servicio', 6, 1), -- Música y Entretenimiento en Vivo
+-- Vasos Personalizados
+(15, 'Producto', 100, 9, NULL), 
+-- Música y Entretenimiento en Vivo
+(15, 'Servicio', 1, NULL, 6), 
 
 -- Paquete Vintage
-(16, 'Producto', 3, 100), -- Invitaciones Personalizadas
-(16, 'Producto', 4, 1), -- Libro de Firmas
+-- Invitaciones Personalizadas
+(16, 'Producto', 100, 3, NULL), 
+-- Libro de Firmas
+(16, 'Producto', 1, 4, NULL), 
 
 -- Paquete Playa
-(17, 'Producto', 1, 30), -- Centro de Mesa Floral
-(17, 'Servicio', 4, 1), -- Servicio de Catering Gourmet
-(17, 'Servicio', 8, 2), -- Transporte de Invitados
+-- Centro de Mesa Floral
+(17, 'Producto', 30, 1, NULL), 
+-- Servicio de Catering Gourmet
+(17, 'Servicio', 1, NULL, 4), 
+-- Transporte de Invitados
+(17, 'Servicio', 2, NULL, 8), 
 
 -- Paquete Jardín
-(18, 'Producto', 1, 20), -- Centro de Mesa Floral
-(18, 'Producto', 5, 1), -- Arco Floral
+-- Centro de Mesa Floral
+(18, 'Producto', 20, 1, NULL), 
+-- Arco Floral
+(18, 'Producto', 1, 5, NULL), 
 
 -- Paquete Personalizado
-(19, 'Servicio', 2, 1), -- Planificación Completa de la Boda
+-- Planificación Completa de la Boda
+(19, 'Servicio', 1, NULL, 2), 
 
 -- Paquete VIP
-(20, 'Servicio', 2, 1), -- Planificación Completa de la Boda
-(20, 'Servicio', 4, 1), -- Servicio de Catering Gourmet
-(20, 'Servicio', 5, 1), -- Fotografía y Video Profesional
-(20, 'Servicio', 6, 1), -- Música y Entretenimiento en Vivo
-(20, 'Servicio', 8, 2), -- Transporte de Invitados
-(20, 'Producto', 1, 30), -- Centro de Mesa Floral
-(20, 'Producto', 5, 2), -- Arco Floral
-(20, 'Producto', 7, 1), -- Letras Gigantes LOVE
-(20, 'Producto', 9, 200), -- Vasos Personalizados
+-- Planificación Completa de la Boda
+(20, 'Servicio', 1, NULL, 2), 
+-- Servicio de Catering Gourmet
+(20, 'Servicio', 1, NULL, 4), 
+-- Fotografía y Video Profesional
+(20, 'Servicio', 1, NULL, 5), 
+-- Música y Entretenimiento en Vivo
+(20, 'Servicio', 1, NULL, 6), 
+-- Transporte de Invitados
+(20, 'Servicio', 2, NULL, 8), 
+-- Centro de Mesa Floral
+(20, 'Producto', 30, 1, NULL), 
+-- Arco Floral
+(20, 'Producto', 2, 5, NULL), 
+-- Letras Gigantes LOVE
+(20, 'Producto', 1, 7, NULL), 
+-- Vasos Personalizados
+(20, 'Producto', 200, 9, NULL), 
 
 -- Paquete Express
-(21, 'Servicio', 1, 1), -- Coordinación del Día de la Boda
-(21, 'Producto', 3, 50), -- Invitaciones Personalizadas
+-- Coordinación del Día de la Boda
+(21, 'Servicio', 1, NULL, 1), 
+-- Invitaciones Personalizadas
+(21, 'Producto', 50, 3, NULL), 
 
 -- Paquete Clásico
-(22, 'Producto', 3, 100), -- Invitaciones Personalizadas
-(22, 'Producto', 4, 1), -- Libro de Firmas
-(22, 'Servicio', 6, 1), -- Música y Entretenimiento en Vivo
+-- Invitaciones Personalizadas
+(22, 'Producto', 100, 3, NULL), 
+-- Libro de Firmas
+(22, 'Producto', 1, 4, NULL), 
+-- Música y Entretenimiento en Vivo
+(22, 'Servicio', 1, NULL, 6), 
 
 -- Paquete Moderno
-(23, 'Producto', 1, 20), -- Centro de Mesa Floral
-(23, 'Producto', 7, 1), -- Letras Gigantes LOVE
-(23, 'Servicio', 6, 1); -- Música y Entretenimiento en Vivo
-
+-- Centro de Mesa Floral
+(23, 'Producto', 20, 1, NULL), 
+-- Letras Gigantes LOVE
+(23, 'Producto', 1, 7, NULL), 
+(23, 'Servicio', 1, NULL, 6); -- Música y Entretenimiento en Vivo

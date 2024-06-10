@@ -1,7 +1,6 @@
 import { APIError } from "groq-sdk";
 import groq from "../objects/ia.object";
 import { HttpException } from "../utils";
-import { srvInsertarMensajeChat } from "./chat.service";
 
 export const srvIASend = async (
   name: string,

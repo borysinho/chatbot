@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { newMessage } from "../controllers/twilio.controller";
-import { ctrlSendMessage } from "../controllers/ia.controller";
+// import { ctrlSendMessage } from "../controllers/ia.controller";
 
 class TwilioRoutes {
   router = Router();
@@ -22,7 +22,7 @@ class TwilioRoutes {
       console.log({ CallBack: req.body });
       res.send("OK");
     });
-    this.router.post("/testia", ctrlSendMessage);
+    // this.router.post("/testia", ctrlSendMessage);
 
     // this
 

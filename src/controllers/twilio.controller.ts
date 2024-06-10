@@ -1,23 +1,15 @@
 import { Request, Response } from "express";
 import { twiml } from "twilio";
 import { HttpException, catchedAsync, response } from "../utils";
-import twilio from "../objects/twilio.object";
-import {
-  completarChat,
-  // generarEmbeddingsProductos,
-  obtenerEmbedding,
-  // obtenerSimilitudesSemanticas,
-  srvInsertarMensajeChat,
-} from "../services";
-import { clientes } from "@prisma/client";
-import {
-  DownloadAudio,
-  TranscribeAudio,
-  sendWhatsappMessage,
-  uploadAudio,
-} from "../services/twilio.service";
+// import twilio from "../objects/twilio.object";
 
-const MessagingResponse = twiml.MessagingResponse;
+// import { clientes } from "@prisma/client";
+// import {
+//   DownloadAudio,
+//   TranscribeAudio,
+//   sendWhatsappMessage,
+//   uploadAudio,
+// } from "../services/twilio.service";
 
 export const newMessage = catchedAsync(async (req: Request, res: Response) => {
   // let {
