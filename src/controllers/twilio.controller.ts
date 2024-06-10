@@ -4,13 +4,12 @@ import { HttpException, catchedAsync, response } from "../utils";
 import twilio from "../objects/twilio.object";
 import {
   completarChat,
-  generarEmbeddingsProductos,
+  // generarEmbeddingsProductos,
   obtenerEmbedding,
-  obtenerSimilitudesSemanticas,
+  // obtenerSimilitudesSemanticas,
   srvInsertarMensajeChat,
-  srvUpdateClienteWhatsapp,
 } from "../services";
-import { Cliente } from "@prisma/client";
+import { clientes } from "@prisma/client";
 import {
   DownloadAudio,
   TranscribeAudio,
@@ -21,85 +20,87 @@ import {
 const MessagingResponse = twiml.MessagingResponse;
 
 export const newMessage = catchedAsync(async (req: Request, res: Response) => {
-  let {
-    WaId: whatsappNumber,
-    Body: mensaje,
-    ProfileName: profileName,
-    MediaContentType0,
-    MediaUrl0,
-  } = req.body;
+  // let {
+  //   WaId: whatsappNumber,
+  //   Body: mensaje,
+  //   ProfileName: profileName,
+  //   MediaContentType0,
+  //   MediaUrl0,
+  // } = req.body;
 
-  // Si el mensaje es un audio, lo transcribimos
-  if (MediaContentType0 && MediaContentType0.startsWith("audio/")) {
-    const audioUrl = MediaUrl0;
+  // // Si el mensaje es un audio, lo transcribimos
+  // if (MediaContentType0 && MediaContentType0.startsWith("audio/")) {
+  //   const audioUrl = MediaUrl0;
 
-    const audioFilename = await DownloadAudio(audioUrl);
-    const audioUrlCloud = await uploadAudio(audioFilename);
-    String(audioUrlCloud);
-    const transcribedAudio = await TranscribeAudio(audioUrlCloud);
+  //   const audioFilename = await DownloadAudio(audioUrl);
+  //   const audioUrlCloud = await uploadAudio(audioFilename);
+  //   String(audioUrlCloud);
+  //   const transcribedAudio = await TranscribeAudio(audioUrlCloud);
 
-    mensaje = transcribedAudio;
-  }
+  //   mensaje = transcribedAudio;
+  // }
 
-  console.log({ mensaje, whatsappNumber, profileName });
+  // console.log({ mensaje, whatsappNumber, profileName });
 
-  // Cargamos los embeddings de los productos
-  await generarEmbeddingsProductos();
+  // // Cargamos los embeddings de los productos
+  // await generarEmbeddingsProductos();
 
-  // Convertirmos a embeddings el mensaje del usuario
-  const result = await obtenerEmbedding(mensaje);
-  console.log({ result });
-  const { embedding: embeddingMensajeUsuario } = result.data[0];
-  console.log({ embeddingMensajeUsuario });
+  // // Convertirmos a embeddings el mensaje del usuario
+  // const result = await obtenerEmbedding(mensaje);
+  // console.log({ result });
+  // const { embedding: embeddingMensajeUsuario } = result.data[0];
+  // console.log({ embeddingMensajeUsuario });
 
-  // Obtenemos el top 2 de similitudes en los embeddings
-  const similitudes: string[] = await obtenerSimilitudesSemanticas(
-    embeddingMensajeUsuario
-  );
+  // // Obtenemos el top 2 de similitudes en los embeddings
+  // const similitudes: string[] = await obtenerSimilitudesSemanticas(
+  //   embeddingMensajeUsuario
+  // );
 
-  console.log({ similitudes });
+  // console.log({ similitudes });
 
-  // Insertamos el mensaje del usuario en la base de datos
-  const userChat = await srvInsertarMensajeChat(
-    {
-      role: "user",
-      content: mensaje,
-    },
-    whatsappNumber,
-    profileName
-  );
+  // // Insertamos el mensaje del usuario en la base de datos
+  // const userChat = await srvInsertarMensajeChat(
+  //   {
+  //     role: "user",
+  //     content: mensaje,
+  //   },
+  //   whatsappNumber,
+  //   profileName
+  // );
 
-  console.log({ userChat });
+  // console.log({ userChat });
 
-  // Actualizamos el template
-  systemTemplate.content += `\nDatos para elaborar respuesta:\n${similitudes}`;
+  // // Actualizamos el template
+  // systemTemplate.content += `\nDatos para elaborar respuesta:\n${similitudes}`;
 
-  // Completamos el chat
-  const chatCompletion = await completarChat(
-    whatsappNumber,
-    profileName,
-    [systemTemplate],
-    userChat
-  );
+  // // Completamos el chat
+  // const chatCompletion = await completarChat(
+  //   whatsappNumber,
+  //   profileName,
+  //   [systemTemplate],
+  //   userChat
+  // );
 
-  console.log({ chatCompletion });
+  // console.log({ chatCompletion });
 
-  // Insertamos la respuesta de la IA en la base de datos
-  const IAChat = await srvInsertarMensajeChat(
-    { role: "assistant", content: chatCompletion.choices[0].message.content },
-    whatsappNumber,
-    profileName
-  );
+  // // Insertamos la respuesta de la IA en la base de datos
+  // const IAChat = await srvInsertarMensajeChat(
+  //   { role: "assistant", content: chatCompletion.choices[0].message.content },
+  //   whatsappNumber,
+  //   profileName
+  // );
 
-  console.log({ IAChat });
+  // console.log({ IAChat });
 
-  // Enviamos respuesta para Twilio
-  await sendWhatsappMessage(
-    whatsappNumber,
-    chatCompletion.choices[0].message.content
-  );
+  // // Enviamos respuesta para Twilio
+  // await sendWhatsappMessage(
+  //   whatsappNumber,
+  //   chatCompletion.choices[0].message.content
+  // );
 
   res.status(200);
+
+  //====================HASTA AQUI
 
   // console.log(WaId);
 
@@ -227,46 +228,60 @@ const test = async (
   whatsappNumber: string,
   profileName: string
 ) => {
-  // Cargamos los embeddings de los productos
-  await generarEmbeddingsProductos();
-
-  // Convertirmos a embeddings el mensaje del usuario
-  // const result = await obtenerEmbedding(mensaje);
-  // const { embedding } = result.data[0];
-
-  const embedding = [0.028576007, -0.983466, -0.17882407];
-
-  // console.log({ embedding });
-
-  const similitudes: string[] = await obtenerSimilitudesSemanticas(embedding);
-
-  // console.log({ similitudes });
-
-  // Obtenemos la respuesta de la IA
-  const chat = await srvInsertarMensajeChat(
-    {
-      role: "user",
-      content: mensaje,
-    },
-    whatsappNumber,
-    profileName
-  );
-  // console.log({ chat });
-
-  systemTemplate.content += `\nDatos para elaborar respuesta:\n${similitudes}`;
-
-  // console.log({ systemTemplate });
-
-  const chatCompletado = await completarChat(
-    whatsappNumber,
-    profileName,
-    [systemTemplate],
-    chat
-  );
-
-  return chatCompletado;
+  // // Cargamos los embeddings de los productos
+  // await generarEmbeddingsProductos();
+  // // Convertirmos a embeddings el mensaje del usuario
+  // // const result = await obtenerEmbedding(mensaje);
+  // // const { embedding } = result.data[0];
+  // const embedding = [0.028576007, -0.983466, -0.17882407];
+  // // console.log({ embedding });
+  // const similitudes: string[] = await obtenerSimilitudesSemanticas(embedding);
+  // // console.log({ similitudes });
+  // // Obtenemos la respuesta de la IA
+  // const chat = await srvInsertarMensajeChat(
+  //   {
+  //     role: "user",
+  //     content: mensaje,
+  //   },
+  //   whatsappNumber,
+  //   profileName
+  // );
+  // // console.log({ chat });
+  // systemTemplate.content += `\nDatos para elaborar respuesta:\n${similitudes}`;
+  // // console.log({ systemTemplate });
+  // const chatCompletado = await completarChat(
+  //   whatsappNumber,
+  //   profileName,
+  //   [systemTemplate],
+  //   chat
+  // );
+  // return chatCompletado;
 };
 
 // export const postMessage = catchedAsync(async (req: Request, res: Response) => {
 //   let { WaId, Body, ProfileName, MediaContentType0, MediaUrl0 } = req.body;
 // });
+
+//==============================
+/**
+ * Pasos a seguir:
+ * 1. Tener un EndPoint que permita generar los embeddings a partir de los datos que existen en la Base de Datos
+ * 1.1 Realizar el pre procesamiento de los datos
+ * 1.2 Establecer los métodos para generar los embeddings
+ * 1.2.1 Embeddings tabla Productos:
+ * 1.2.1.1 Embeddings que indique el producto y sus características [id, nombre, caracteristicas]
+ * 1.2.1.2 Embeddings que indique el producto y su precio           [id, nombre, precio, moneda]
+ * 1.2.1.3 Embeddings que indique el producto y su stock            [id, nombre, stock]
+ * 1.2.2 Embeddings tabla Servicios:
+ * 1.2.2.1 Embeddings que indique el servicio y sus características
+ * 1.2.2.2 Embeddings que indique el servicio y su precio
+ * 1.2.2.3 Embeddings que indique el servicio y su disponibilidad
+ * 1.2.3 Embeddings tabla Paquete de Productos
+ * 1.2.3.1 Embeddings que indique el paquete, productos y características
+ * 1.2.3.2 Embeddings que indique el paquete y su precio
+ * 1.2.3.3 Embeddings que indique el paquete y su disponibilidad
+ * 1.2.4 Embeddings historial de mensajes
+ * 1.2.4.1 Embeddings que indique el mensaje y quién lo escribió el mensaje
+ */
+
+//==============================

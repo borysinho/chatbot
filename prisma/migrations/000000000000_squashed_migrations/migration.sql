@@ -89,13 +89,15 @@ CREATE TABLE "Productos" (
 );
 
 -- CreateTable
-CREATE TABLE "ProductosEmbeddings" (
-    "idProducto" INTEGER NOT NULL,
+CREATE TABLE "EmbeddingsProductos" (
+    "idProductoEmbedding" SERIAL NOT NULL,
     "NombreProducto" TEXT NOT NULL,
     "Descripcion" TEXT NOT NULL,
     "Embedding" vector(3) NOT NULL,
+    "idProducto" INTEGER,
+    "idJuegoDeProductos" INTEGER,
 
-    CONSTRAINT "ProductosEmbeddings_pkey" PRIMARY KEY ("idProducto")
+    CONSTRAINT "EmbeddingsProductos_pkey" PRIMARY KEY ("idProductoEmbedding")
 );
 
 -- CreateTable
@@ -154,6 +156,9 @@ CREATE TABLE "JuegoDeProductos" (
 
 -- CreateTable
 CREATE TABLE "DetalleJuegoDeProductos" (
+    "cantidad" INTEGER NOT NULL,
+    "precio" DOUBLE PRECISION NOT NULL,
+    "juegoCompleto" BOOLEAN NOT NULL,
     "idJuegoDeProductos" INTEGER NOT NULL,
     "idProducto" INTEGER NOT NULL,
 
@@ -222,7 +227,10 @@ ALTER TABLE "Contrato" ADD CONSTRAINT "Contrato_idCliente_fkey" FOREIGN KEY ("id
 ALTER TABLE "Productos" ADD CONSTRAINT "Productos_idUnidadDeMedida_fkey" FOREIGN KEY ("idUnidadDeMedida") REFERENCES "UnidadDeMedida"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "ProductosEmbeddings" ADD CONSTRAINT "ProductosEmbeddings_idProducto_fkey" FOREIGN KEY ("idProducto") REFERENCES "Productos"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "EmbeddingsProductos" ADD CONSTRAINT "EmbeddingsProductos_idProducto_fkey" FOREIGN KEY ("idProducto") REFERENCES "Productos"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "EmbeddingsProductos" ADD CONSTRAINT "EmbeddingsProductos_idJuegoDeProductos_fkey" FOREIGN KEY ("idJuegoDeProductos") REFERENCES "JuegoDeProductos"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "StockPorFecha" ADD CONSTRAINT "StockPorFecha_idProducto_fkey" FOREIGN KEY ("idProducto") REFERENCES "Productos"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

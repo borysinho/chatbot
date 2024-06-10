@@ -22,7 +22,9 @@ class TwilioRoutes {
       console.log({ CallBack: req.body });
       res.send("OK");
     });
-    this, this.router.post("/testia", ctrlSendMessage);
+    this.router.post("/testia", ctrlSendMessage);
+
+    // this
 
     //     this.router.post("/twilio", (req, res) => {
     //       console.log({ Body: req.body });
