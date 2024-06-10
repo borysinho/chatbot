@@ -6,7 +6,7 @@ export const srvInsertarServicio = async (servicio: any) => {
       nombre: servicio.nombre,
       descripcion: servicio.descripcion,
       tarifa: servicio.tarifa,
-      duracion: servicio.duracion,
+      duracion_en_horas: servicio.duracion,
     },
   });
 
@@ -14,7 +14,15 @@ export const srvInsertarServicio = async (servicio: any) => {
 };
 
 export const srvObtenerServicios = async () => {
-  const servicios = await client.servicios.findMany();
+  const servicios = await client.servicios.findMany({
+    select: {
+      nombre: true,
+      descripcion: true,
+      tarifa: true,
+      moneda: true,
+      duracion_en_horas: true,
+    },
+  });
 
   return servicios;
 };
@@ -41,7 +49,7 @@ export const srvActualizarServicio = async (
       nombre: servicio.nombre,
       descripcion: servicio.descripcion,
       tarifa: servicio.tarifa,
-      duracion: servicio.duracion,
+      duracion_en_horas: servicio.duracion,
     },
   });
 
@@ -56,4 +64,37 @@ export const srvEliminarServicio = async (servicio_id: number) => {
   });
 
   return servicioEliminado;
+};
+
+export const srvServiciosDescToString = async () => {
+  const servicios = await client.servicios.findMany({
+    select: {
+      nombre: true,
+      descripcion: true,
+    },
+  });
+
+  const serviciosString = servicios.map((servicio) => {
+    return `${servicio.nombre}. ${servicio.descripcion}`;
+  });
+
+  return serviciosString;
+};
+
+export const srvServiciosPrecioToString = async () => {
+  const servicios = await client.servicios.findMany({
+    select: {
+      nombre: true,
+      tarifa: true,
+      moneda: true,
+    },
+  });
+
+  const serviciosString = servicios.map((servicio) => {
+    return `${servicio.nombre}. Costo: ${servicio.tarifa} ${servicio.moneda}`;
+  });
+
+  console.log({ serviciosString });
+
+  return serviciosString;
 };

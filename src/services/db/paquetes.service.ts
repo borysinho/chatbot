@@ -60,30 +60,69 @@ export const srvEliminarPaquete = async (paquete_id: number) => {
 
 export const srvObtenerFullPaquete = async () => {
   const paquetes = await client.paquetes.findMany({
-    include: {
+    select: {
+      nombre: true,
+      descripcion: true,
+      precio: true,
+      moneda: true,
       elementospaquetes: {
-        include: {
-          productos: true,
-          servicios: true,
+        select: {
+          cantidad: true,
+          tipo_elemento: true,
+          productos: {
+            select: {
+              nombre: true,
+              descripcion: true,
+              precio: true,
+              moneda: true,
+            },
+          },
+          servicios: {
+            select: {
+              nombre: true,
+              descripcion: true,
+              tarifa: true,
+              moneda: true,
+              duracion_en_horas: true,
+            },
+          },
         },
       },
     },
   });
 
   return paquetes;
+};
 
-  // const elementosPaqueteConProductosOServicios = elementosPaquete.map(
-  //   async (elemento) => {
-  //     return {
-  //       ...elemento,
-  //       item:
-  //         elemento.tipo_item === productoservicio_enum.Producto &&
-  //         elemento.item_id !== null
-  //           ? await srvObtenerProducto(elemento.item_id)
-  //           : await srvObtenerServicio(elemento.item_id as number),
-  //     };
-  //   }
-  // );
+export const srvPaqueteDescripcionToArrayString = async () => {
+  const paquetes = await srvObtenerFullPaquete();
+  const paquetesDesc = paquetes.map((paquete) => {
+    const elementos = paquete.elementospaquetes.map((elemento) => {
+      if (elemento.tipo_elemento === "Producto") {
+        return `${elemento.cantidad}x ${elemento.productos?.nombre}`;
+      } else {
+        return `${elemento.cantidad}x ${elemento.servicios?.nombre}`;
+      }
+    });
 
-  // return elementosPaqueteConProductosOServicios;
+    // const texto = `${paquete.nombre}. Consta de ${elementos.join(", ")}. Precio: ${paquete.precio} ${paquete.moneda}`;
+    const texto = `${paquete.nombre}. Consta de ${elementos.join(", ")}.`;
+
+    return texto;
+  });
+
+  console.log({ paquetesDesc });
+  return paquetesDesc;
+};
+
+export const srvPaquetePrecioToArraString = async () => {
+  const paquetes = await srvObtenerFullPaquete();
+  const paquetesPrecio = paquetes.map((paquete) => {
+    // const texto = `${paquete.nombre}. Precio: ${paquete.precio} ${paquete.moneda}`;
+    const texto = `${paquete.nombre}. Precio: ${paquete.precio} ${paquete.moneda}`;
+
+    return texto;
+  });
+
+  return paquetesPrecio;
 };

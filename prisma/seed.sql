@@ -12,7 +12,7 @@ INSERT INTO "Productos" (nombre, descripcion, precio, moneda, stock) VALUES
 ('Cajas de Regalo para Invitados', 'Cajas de regalo con recuerdos y dulces para los invitados.', 42.00, 'BS', 250);
 
 -- Servicios
-INSERT INTO "Servicios" (nombre, descripcion, tarifa, moneda, duracion) VALUES
+INSERT INTO "Servicios" (nombre, descripcion, tarifa, moneda, duracion_en_horas) VALUES
 ('Coordinación del Día de la Boda', 'Coordinación completa del día de la boda para asegurar que todo salga perfecto.', 7000.00, 'BS', 720),
 ('Planificación Completa de la Boda', 'Servicio integral de planificación de la boda, desde la selección del lugar hasta la coordinación con proveedores.', 42000.00, 'BS', 43200),
 ('Decoración y Diseño del Evento', 'Diseño y decoración del lugar del evento de acuerdo a los gustos y preferencias de los novios.', 12600.00, 'BS', 1440),
@@ -27,30 +27,30 @@ INSERT INTO "Servicios" (nombre, descripcion, tarifa, moneda, duracion) VALUES
 
 
 -- Paquetes
-INSERT INTO "Paquetes" (nombre, descripcion, precio) VALUES
-('Paquete Esencial', 'Incluye la coordinación del día de la boda y la decoración básica del lugar.', 7000.00),
-('Paquete Romántico', 'Decoración romántica con velas aromáticas y flores frescas, ideal para bodas íntimas.', 10500.00),
-('Paquete Elegante', 'Invitaciones personalizadas, libro de firmas de lujo y cojines para anillos.', 8400.00),
-('Paquete Floral', 'Centro de mesa floral, arco floral para ceremonia y confeti biodegradable.', 15400.00),
-('Paquete Fotografía y Video', 'Servicio completo de fotografía y video profesional para capturar todos los momentos especiales.', 21000.00),
-('Paquete Musical', 'Música en vivo con banda o DJ, sistema de sonido y luces para la pista de baile.', 15000.00),
-('Paquete Gourmet', 'Servicio de catering gourmet con menú personalizado para todos los invitados.', 30000.00),
-('Paquete Transporte', 'Transporte de lujo para los invitados y los novios.', 8400.00),
-('Paquete Completo', 'Planificación completa de la boda incluyendo todos los servicios: decoración, catering, fotografía, música, y transporte.', 100000.00),
-('Paquete Económico', 'Servicios esenciales de coordinación y decoración básica a un precio accesible.', 5600.00),
-('Paquete Ceremonia', 'Organización y decoración de la ceremonia civil y religiosa.', 12600.00),
-('Paquete Luna de Miel', 'Planificación de la luna de miel y asesoría de estilo para los novios.', 14000.00),
-('Paquete Deluxe', 'Incluye todos los servicios del paquete completo más detalles adicionales y exclusivos.', 150000.00),
-('Paquete Decoración', 'Servicios completos de decoración y diseño del evento, incluyendo centro de mesa floral y letras gigantes LOVE.', 42000.00),
-('Paquete Infantil', 'Decoración especial para bodas con invitados niños, incluyendo áreas de juego y animadores.', 28000.00),
-('Paquete Vintage', 'Decoración con temática vintage, invitaciones personalizadas y detalles de época.', 21000.00),
-('Paquete Playa', 'Decoración temática de playa, transporte para los invitados y catering con menú de mariscos.', 56000.00),
-('Paquete Jardín', 'Decoración al aire libre con temática de jardín, centro de mesa floral y arco floral.', 35000.00),
-('Paquete Personalizado', 'Planificación de boda a medida según las preferencias y gustos específicos de los novios.', 50000.00),
-('Paquete VIP', 'Servicio exclusivo para bodas de lujo, incluyendo planificación completa, transporte de lujo y detalles personalizados.', 200000.00),
-('Paquete Express', 'Planificación rápida y efectiva para bodas con poco tiempo de preparación, incluye los servicios básicos.', 35000.00),
-('Paquete Clásico', 'Servicios tradicionales y elegantes, incluyendo invitaciones, libro de firmas y música clásica.', 28000.00),
-('Paquete Moderno', 'Decoración y servicios con un toque moderno y vanguardista, ideal para bodas urbanas.', 45000.00);
+INSERT INTO "Paquetes" (nombre, descripcion, precio, moneda) VALUES
+('Paquete Esencial', 'Incluye la coordinación del día de la boda y la decoración básica del lugar.', 7000.00, 'BS'),
+('Paquete Romántico', 'Decoración romántica con velas aromáticas y flores frescas, ideal para bodas íntimas.', 10500.00, 'BS'),
+('Paquete Elegante', 'Invitaciones personalizadas, libro de firmas de lujo y cojines para anillos.', 8400.00, 'BS'),
+('Paquete Floral', 'Centro de mesa floral, arco floral para ceremonia y confeti biodegradable.', 15400.00, 'BS'),
+('Paquete Fotografía y Video', 'Servicio completo de fotografía y video profesional para capturar todos los momentos especiales.', 21000.00, 'BS'),
+('Paquete Musical', 'Música en vivo con banda o DJ, sistema de sonido y luces para la pista de baile.', 15000.00, 'BS'),
+('Paquete Gourmet', 'Servicio de catering gourmet con menú personalizado para todos los invitados.', 30000.00, 'BS'),
+('Paquete Transporte', 'Transporte de lujo para los invitados y los novios.', 8400.00, 'BS'),
+('Paquete Completo', 'Planificación completa de la boda incluyendo todos los servicios: decoración, catering, fotografía, música, y transporte.', 100000.00, 'BS'),
+('Paquete Económico', 'Servicios esenciales de coordinación y decoración básica a un precio accesible.', 5600.00, 'BS'),
+('Paquete Ceremonia', 'Organización y decoración de la ceremonia civil y religiosa.', 12600.00, 'BS'),
+('Paquete Luna de Miel', 'Planificación de la luna de miel y asesoría de estilo para los novios.', 14000.00, 'BS'),
+('Paquete Deluxe', 'Incluye todos los servicios del paquete completo más detalles adicionales y exclusivos.', 150000.00, 'BS'),
+('Paquete Decoración', 'Servicios completos de decoración y diseño del evento, incluyendo centro de mesa floral y letras gigantes LOVE.', 42000.00, 'BS'),
+('Paquete Infantil', 'Decoración especial para bodas con invitados niños, incluyendo áreas de juego y animadores.', 28000.00, 'BS'),
+('Paquete Vintage', 'Decoración con temática vintage, invitaciones personalizadas y detalles de época.', 21000.00, 'BS'),
+('Paquete Playa', 'Decoración temática de playa, transporte para los invitados y catering con menú de mariscos.', 56000.00, 'BS'),
+('Paquete Jardín', 'Decoración al aire libre con temática de jardín, centro de mesa floral y arco floral.', 35000.00, 'BS'),
+('Paquete Personalizado', 'Planificación de boda a medida según las preferencias y gustos específicos de los novios.', 50000.00, 'BS'),
+('Paquete VIP', 'Servicio exclusivo para bodas de lujo, incluyendo planificación completa, transporte de lujo y detalles personalizados.', 200000.00, 'BS'),
+('Paquete Express', 'Planificación rápida y efectiva para bodas con poco tiempo de preparación, incluye los servicios básicos.', 35000.00, 'BS'),
+('Paquete Clásico', 'Servicios tradicionales y elegantes, incluyendo invitaciones, libro de firmas y música clásica.', 28000.00, 'BS'),
+('Paquete Moderno', 'Decoración y servicios con un toque moderno y vanguardista, ideal para bodas urbanas.', 45000.00, 'BS');
 
 
 -- ElementosPaquetes

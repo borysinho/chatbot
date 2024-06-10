@@ -10,6 +10,7 @@ class DBRoutes {
 
   intializeRoutes() {
     this.router.get("/data", ctrlObtenerDatos);
+    
   }
 }
 

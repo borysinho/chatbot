@@ -1,17 +1,25 @@
 import client from "../../objects/prisma.object";
+import { srvServiciosDescToString } from "./servicios.service";
 
 export const srvInsertarChat = async (
   message: any,
   whatsappNumber: string,
   profileName: string
 ) => {
-  const chat = await client..create({
+  const chat = await client.chat.create({
     data: {
-      message: message,
-      clientes: {
-        create: {
-          whatsappNumber: whatsappNumber,
-          profileName: profileName,
+      content: message.body,
+      role: message.direction,
+
+      cliente: {
+        connectOrCreate: {
+          where: {
+            whatsappNumber,
+          },
+          create: {
+            whatsappNumber,
+            profileName,
+          },
         },
       },
     },
@@ -23,7 +31,7 @@ export const srvInsertarChat = async (
 export const srvObtenerChatDesdeWhatsapp = async (whatsappNumber: string) => {
   const historialChat = await client.chat.findMany({
     where: {
-      clientes: {
+      cliente: {
         whatsappNumber,
       },
     },

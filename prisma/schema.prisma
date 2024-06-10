@@ -8,16 +8,36 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model Chat {
+  id        Int      @id @default(autoincrement())
+  content   String
+  createdAt DateTime @default(now())
+
+  role Role
+
+  cliente_id Int
+  cliente    Clientes @relation(fields: [cliente_id], references: [cliente_id])
+}
+
+enum Role {
+  user
+  system
+  assistant
+}
+
 model Clientes {
   cliente_id        Int                 @id @default(autoincrement())
-  nombre            String              @db.VarChar(255)
-  email             String              @unique @db.VarChar(255)
+  nombre            String?             @db.VarChar(255)
+  email             String?             @unique @db.VarChar(255)
   telefono          String?             @db.VarChar(20)
   direccion         String?
   fecha_registro    DateTime?           @default(now()) @db.Timestamp(6)
+  whatsappNumber    String              @unique
+  profileName       String
   cotizaciones      Cotizaciones[]
   reservasservicios ReservasServicios[]
   ventas            Ventas[]
+  chats             Chat[]
 }
 
 model Cotizaciones {
@@ -112,6 +132,7 @@ model Paquetes {
   nombre               String                 @db.VarChar(255)
   descripcion          String?
   precio               Decimal                @db.Decimal(10, 2)
+  moneda               String?                @default("BS") @db.VarChar(3)
   fecha_creacion       DateTime?              @default(now()) @db.Timestamp(6)
   detallescotizaciones DetallesCotizaciones[]
   detallesventas       DetallesVentas[]
@@ -163,7 +184,7 @@ model Servicios {
   descripcion           String?
   tarifa                Decimal                 @db.Decimal(10, 2)
   moneda                String?                 @default("BS") @db.VarChar(3)
-  duracion              Int
+  duracion_en_horas     Int
   fecha_creacion        DateTime?               @default(now()) @db.Timestamp(6)
   detallescotizaciones  DetallesCotizaciones[]
   detallesventas        DetallesVentas[]

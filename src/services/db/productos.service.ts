@@ -1,4 +1,12 @@
 import client from "../../objects/prisma.object";
+import {
+  srvPaqueteDescripcionToArrayString,
+  srvPaquetePrecioToArraString,
+} from "./paquetes.service";
+import {
+  srvServiciosDescToString,
+  srvServiciosPrecioToString,
+} from "./servicios.service";
 
 export const srvInsertarProducto = async (producto: any) => {
   const productoCreado = await client.productos.create({
@@ -14,7 +22,14 @@ export const srvInsertarProducto = async (producto: any) => {
 };
 
 export const srvObtenerProductos = async () => {
-  const productos = await client.productos.findMany();
+  const productos = await client.productos.findMany({
+    select: {
+      nombre: true,
+      descripcion: true,
+      precio: true,
+      moneda: true,
+    },
+  });
 
   return productos;
 };
@@ -57,3 +72,23 @@ export const srvEliminarProducto = async (producto_id: number) => {
 
   return productoEliminado;
 };
+
+export const srvProdDescrToString = async () => {
+  const productos = await srvObtenerProductos();
+  const productosArray = productos.map(
+    (producto) => `${producto.nombre}. ${producto.descripcion}`
+  );
+  console.log({ productosArray });
+  return productosArray;
+};
+
+export const srvProdPrecioToString = async () => {
+  const productos = await srvObtenerProductos();
+  const productosArray = productos.map(
+    (producto) =>
+      `${producto.nombre}. Precio: ${producto.precio} ${producto.moneda}`
+  );
+  console.log({ productosArray });
+  return productosArray;
+};
+srvPaquetePrecioToArraString();
