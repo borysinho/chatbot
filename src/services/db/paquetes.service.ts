@@ -1,3 +1,4 @@
+import { PaquetesEmbeddings } from "@prisma/client";
 import client from "../../objects/prisma.object";
 import { srvObtenerProducto } from "./productos.service";
 import { srvObtenerServicio } from "./servicios.service";
@@ -61,6 +62,7 @@ export const srvEliminarPaquete = async (paquete_id: number) => {
 export const srvObtenerFullPaquete = async () => {
   const paquetes = await client.paquetes.findMany({
     select: {
+      paquete_id: true,
       nombre: true,
       descripcion: true,
       precio: true,
@@ -96,7 +98,7 @@ export const srvObtenerFullPaquete = async () => {
 
 export const srvPaqueteDescripcionToArrayString = async () => {
   const paquetes = await srvObtenerFullPaquete();
-  const paquetesDesc = paquetes.map((paquete) => {
+  const paquetesDesc: PaquetesEmbeddings[] = paquetes.map((paquete) => {
     const elementos = paquete.elementospaquetes.map((elemento) => {
       if (elemento.tipo_elemento === "Producto") {
         return `${elemento.cantidad}x ${elemento.productos?.nombre}`;
@@ -105,23 +107,24 @@ export const srvPaqueteDescripcionToArrayString = async () => {
       }
     });
 
-    // const texto = `${paquete.nombre}. Consta de ${elementos.join(", ")}. Precio: ${paquete.precio} ${paquete.moneda}`;
-    const texto = `${paquete.nombre}. Consta de ${elementos.join(", ")}.`;
-
-    return texto;
+    return {
+      paquete_id: paquete.paquete_id,
+      descripcion: `${paquete.nombre}. Consta de ${elementos.join(", ")}.`,
+    };
   });
 
-  console.log({ paquetesDesc });
+  // console.log({ paquetesDesc });
   return paquetesDesc;
 };
 
 export const srvPaquetePrecioToArraString = async () => {
   const paquetes = await srvObtenerFullPaquete();
-  const paquetesPrecio = paquetes.map((paquete) => {
+  const paquetesPrecio: PaquetesEmbeddings[] = paquetes.map((paquete) => {
     // const texto = `${paquete.nombre}. Precio: ${paquete.precio} ${paquete.moneda}`;
-    const texto = `${paquete.nombre}. Precio: ${paquete.precio} ${paquete.moneda}`;
-
-    return texto;
+    return {
+      paquete_id: paquete.paquete_id,
+      descripcion: `${paquete.nombre}. Precio: ${paquete.precio} ${paquete.moneda}`,
+    };
   });
 
   return paquetesPrecio;

@@ -8,6 +8,11 @@ import {
   srvServiciosDescToString,
   srvServiciosPrecioToString,
 } from "./servicios.service";
+import {
+  Productos,
+  ProductosEmbeddings,
+  ServiciosEmbeddings,
+} from "@prisma/client";
 
 export const srvInsertarProducto = async (producto: any) => {
   const productoCreado = await client.productos.create({
@@ -25,6 +30,7 @@ export const srvInsertarProducto = async (producto: any) => {
 export const srvObtenerProductos = async () => {
   const productos = await client.productos.findMany({
     select: {
+      producto_id: true,
       nombre: true,
       descripcion: true,
       precio: true,
@@ -76,19 +82,24 @@ export const srvEliminarProducto = async (producto_id: number) => {
 
 export const srvProdDescrToString = async () => {
   const productos = await srvObtenerProductos();
-  const productosArray = productos.map(
-    (producto) => `${producto.nombre}. ${producto.descripcion}`
-  );
-  console.log({ productosArray });
+  const productosArray: ProductosEmbeddings[] = productos.map((producto) => {
+    return {
+      producto_id: producto.producto_id,
+      descripcion: `${producto.nombre}. ${producto.descripcion}`,
+    };
+  });
+  // console.log({ productosArray });
   return productosArray;
 };
 
 export const srvProdPrecioToString = async () => {
   const productos = await srvObtenerProductos();
-  const productosArray = productos.map(
-    (producto) =>
-      `${producto.nombre}. Precio: ${producto.precio} ${producto.moneda}`
-  );
-  console.log({ productosArray });
+  const productosArray: ProductosEmbeddings[] = productos.map((producto) => {
+    return {
+      producto_id: producto.producto_id,
+      descripcion: `${producto.nombre}. Costo: ${producto.precio} ${producto.moneda}`,
+    };
+  });
+  // console.log({ productosArray });
   return productosArray;
 };

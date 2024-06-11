@@ -1,3 +1,9 @@
+-- CreateExtension
+CREATE EXTENSION IF NOT EXISTS "vector";
+
+-- CreateEnum
+CREATE TYPE "Role" AS ENUM ('user', 'system', 'assistant');
+
 -- CreateEnum
 CREATE TYPE "PendienteAprobadaRechazada_enum" AS ENUM ('Pendiente', 'Aprobada', 'Rechazada');
 
@@ -14,13 +20,35 @@ CREATE TYPE "ProductoServicio_enum" AS ENUM ('Producto', 'Servicio');
 CREATE TYPE "ProductoServicioPaquete_enum" AS ENUM ('Producto', 'Servicio', 'Paquete');
 
 -- CreateTable
+CREATE TABLE "ProductosEmbeddings" (
+    "producto_id" INTEGER NOT NULL,
+    "descripcion" TEXT NOT NULL,
+    "embedding" vector(500),
+
+    CONSTRAINT "ProductosEmbeddings_pkey" PRIMARY KEY ("producto_id")
+);
+
+-- CreateTable
+CREATE TABLE "Chat" (
+    "id" SERIAL NOT NULL,
+    "content" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "role" "Role" NOT NULL,
+    "cliente_id" INTEGER NOT NULL,
+
+    CONSTRAINT "Chat_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "Clientes" (
     "cliente_id" SERIAL NOT NULL,
-    "nombre" VARCHAR(255) NOT NULL,
-    "email" VARCHAR(255) NOT NULL,
+    "nombre" VARCHAR(255),
+    "email" VARCHAR(255),
     "telefono" VARCHAR(20),
     "direccion" TEXT,
     "fecha_registro" TIMESTAMP(6) DEFAULT CURRENT_TIMESTAMP,
+    "whatsappNumber" TEXT NOT NULL,
+    "profileName" TEXT NOT NULL,
 
     CONSTRAINT "Clientes_pkey" PRIMARY KEY ("cliente_id")
 );
@@ -106,6 +134,7 @@ CREATE TABLE "Paquetes" (
     "nombre" VARCHAR(255) NOT NULL,
     "descripcion" TEXT,
     "precio" DECIMAL(10,2) NOT NULL,
+    "moneda" VARCHAR(3) DEFAULT 'BS',
     "fecha_creacion" TIMESTAMP(6) DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "Paquetes_pkey" PRIMARY KEY ("paquete_id")
@@ -156,7 +185,7 @@ CREATE TABLE "Servicios" (
     "descripcion" TEXT,
     "tarifa" DECIMAL(10,2) NOT NULL,
     "moneda" VARCHAR(3) DEFAULT 'BS',
-    "duracion" INTEGER NOT NULL,
+    "duracion_en_horas" INTEGER NOT NULL,
     "fecha_creacion" TIMESTAMP(6) DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "Servicios_pkey" PRIMARY KEY ("servicio_id")
@@ -177,7 +206,16 @@ CREATE TABLE "Ventas" (
 CREATE UNIQUE INDEX "Clientes_email_key" ON "Clientes"("email");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "Clientes_whatsappNumber_key" ON "Clientes"("whatsappNumber");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "DisponibilidadGeneral_tipo_item_producto_id_servicio_id_fec_key" ON "DisponibilidadGeneral"("tipo_item", "producto_id", "servicio_id", "fecha");
+
+-- AddForeignKey
+ALTER TABLE "ProductosEmbeddings" ADD CONSTRAINT "ProductosEmbeddings_producto_id_fkey" FOREIGN KEY ("producto_id") REFERENCES "Productos"("producto_id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Chat" ADD CONSTRAINT "Chat_cliente_id_fkey" FOREIGN KEY ("cliente_id") REFERENCES "Clientes"("cliente_id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Cotizaciones" ADD CONSTRAINT "Cotizaciones_cliente_id_fkey" FOREIGN KEY ("cliente_id") REFERENCES "Clientes"("cliente_id") ON DELETE NO ACTION ON UPDATE NO ACTION;

@@ -1,5 +1,8 @@
 import { Router } from "express";
-import { ctrlObtenerDatos } from "../controllers/db.controller";
+import {
+  ctrlCargarEmbeddings,
+  ctrlObtenerDatos,
+} from "../controllers/db.controller";
 
 class DBRoutes {
   router = Router();
@@ -10,7 +13,7 @@ class DBRoutes {
 
   intializeRoutes() {
     this.router.get("/data", ctrlObtenerDatos);
-    
+    this.router.post("/load", ctrlCargarEmbeddings);
   }
 }
 

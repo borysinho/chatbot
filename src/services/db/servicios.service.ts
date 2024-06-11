@@ -1,3 +1,4 @@
+import { ServiciosEmbeddings } from "@prisma/client";
 import client from "../../objects/prisma.object";
 
 export const srvInsertarServicio = async (servicio: any) => {
@@ -16,6 +17,7 @@ export const srvInsertarServicio = async (servicio: any) => {
 export const srvObtenerServicios = async () => {
   const servicios = await client.servicios.findMany({
     select: {
+      servicio_id: true,
       nombre: true,
       descripcion: true,
       tarifa: true,
@@ -67,34 +69,28 @@ export const srvEliminarServicio = async (servicio_id: number) => {
 };
 
 export const srvServiciosDescToString = async () => {
-  const servicios = await client.servicios.findMany({
-    select: {
-      nombre: true,
-      descripcion: true,
-    },
-  });
+  const servicios = await srvObtenerServicios();
 
-  const serviciosString = servicios.map((servicio) => {
-    return `${servicio.nombre}. ${servicio.descripcion}`;
+  const serviciosString: ServiciosEmbeddings[] = servicios.map((servicio) => {
+    return {
+      servicio_id: servicio.servicio_id,
+      descripcion: `${servicio.nombre}. ${servicio.descripcion}`,
+    };
   });
 
   return serviciosString;
 };
 
 export const srvServiciosPrecioToString = async () => {
-  const servicios = await client.servicios.findMany({
-    select: {
-      nombre: true,
-      tarifa: true,
-      moneda: true,
-    },
+  const servicios = await srvObtenerServicios();
+
+  const serviciosString: ServiciosEmbeddings[] = servicios.map((servicio) => {
+    return {
+      servicio_id: servicio.servicio_id,
+      descripcion: `${servicio.nombre}. Costo: ${servicio.tarifa} ${servicio.moneda}`,
+    };
   });
 
-  const serviciosString = servicios.map((servicio) => {
-    return `${servicio.nombre}. Costo: ${servicio.tarifa} ${servicio.moneda}`;
-  });
-
-  console.log({ serviciosString });
-
+  // console.log({ serviciosString });
   return serviciosString;
 };
