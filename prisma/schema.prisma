@@ -162,6 +162,7 @@ model Productos {
   detallesventas              DetallesVentas[]
   disponibilidadgeneral       DisponibilidadGeneral[]
   elementospaquetes           ElementosPaquetes[]
+  productosembeddings         ProductosEmbeddings?
 }
 
 model ReservasServicios {
@@ -234,4 +235,12 @@ enum ProductoServicioPaquete_enum {
   Producto
   Servicio
   Paquete
+}
+
+model ProductosEmbeddings {
+  producto_id Int                         @id
+  descripcion String
+  embedding   Unsupported("vector(1436)")
+
+  productos Productos @relation(fields: [producto_id], references: [producto_id])
 }

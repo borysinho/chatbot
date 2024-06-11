@@ -1,3 +1,4 @@
+import test from "node:test";
 import client from "../../objects/prisma.object";
 import {
   srvPaqueteDescripcionToArrayString,
@@ -91,4 +92,3 @@ export const srvProdPrecioToString = async () => {
   console.log({ productosArray });
   return productosArray;
 };
-srvPaquetePrecioToArraString();
