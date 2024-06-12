@@ -28,7 +28,6 @@
   },
   "dependencies": {
     "@google-cloud/speech": "^6.6.0",
-    "@langchain/openai": "^0.1.2",
     "@prisma/client": "^5.15.0",
     "assemblyai": "^4.4.3",
     "axios": "^1.7.2",
@@ -38,8 +37,7 @@
     "express": "^4.19.2",
     "fs": "^0.0.1-security",
     "groq-sdk": "^0.3.3",
-    "langchain": "^0.2.5",
-    "openai": "^4.47.3",
+    "openai": "^4.50.0",
     "pgvector": "^0.1.8",
     "twilio": "^5.0.4",
     "uuid": "^9.0.1"

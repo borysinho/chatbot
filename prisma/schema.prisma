@@ -10,39 +10,53 @@ datasource db {
 }
 
 model ProductosEmbeddings {
-  producto_id Int                         @id
-  descripcion String
-  embedding   Unsupported("vector(500)")?
+  productoembedding_id Int                         @id @default(autoincrement())
+  producto_id          Int
+  descripcion          String
+  embedding            Unsupported("vector(500)")?
 
   productos Productos @relation(fields: [producto_id], references: [producto_id])
 }
 
 model ServiciosEmbeddings {
-  servicio_id Int                         @id
-  descripcion String
-  embedding   Unsupported("vector(500)")?
+  servicioembedding_id Int                         @id @default(autoincrement())
+  servicio_id          Int
+  descripcion          String
+  embedding            Unsupported("vector(500)")?
 
   servicios Servicios @relation(fields: [servicio_id], references: [servicio_id])
 }
 
 model PaquetesEmbeddings {
-  paquete_id  Int                         @id
-  descripcion String
-  embedding   Unsupported("vector(500)")?
+  paqueteembedding_id Int                         @id @default(autoincrement())
+  paquete_id          Int
+  descripcion         String
+  embedding           Unsupported("vector(500)")?
 
   paquetes Paquetes @relation(fields: [paquete_id], references: [paquete_id])
 }
 
+model ChatEmbeddings {
+  descripcion String
+  embedding   Unsupported("vector(500)")?
+
+  chat_id Int  @id
+  chats   Chat @relation(fields: [chat_id], references: [chat_id])
+
+  cliente_id Int
+  cliente    Clientes @relation(fields: [cliente_id], references: [cliente_id])
+}
+
 model Chat {
   chat_id   Int      @id @default(autoincrement())
-  content   String
+  content   String   @db.Text
   createdAt DateTime @default(now())
 
   role Role
 
-  cliente_id Int
-  cliente    Clientes                    @relation(fields: [cliente_id], references: [cliente_id])
-  embedding  Unsupported("vector(500)")?
+  cliente_id     Int
+  cliente        Clientes         @relation(fields: [cliente_id], references: [cliente_id])
+  ChatEmbeddings ChatEmbeddings[]
 }
 
 enum Role {
@@ -63,6 +77,7 @@ model Clientes {
   reservasservicios ReservasServicios[]
   ventas            Ventas[]
   chats             Chat[]
+  ChatEmbeddings    ChatEmbeddings[]
 }
 
 model Cotizaciones {
@@ -188,7 +203,7 @@ model Productos {
   detallesventas              DetallesVentas[]
   disponibilidadgeneral       DisponibilidadGeneral[]
   elementospaquetes           ElementosPaquetes[]
-  productosembeddings         ProductosEmbeddings?
+  productosembeddings         ProductosEmbeddings[]
 }
 
 model ReservasServicios {

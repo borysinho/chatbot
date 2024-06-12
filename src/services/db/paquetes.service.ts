@@ -1,7 +1,7 @@
+import pgvector from "pgvector";
+import prisma from "../../objects/prisma.object";
 import { PaquetesEmbeddings } from "@prisma/client";
 import client from "../../objects/prisma.object";
-import { srvObtenerProducto } from "./productos.service";
-import { srvObtenerServicio } from "./servicios.service";
 
 export const srvInsertarPaquete = async (paquete: any) => {
   const paqueteCreado = await client.paquetes.create({
@@ -98,7 +98,7 @@ export const srvObtenerFullPaquete = async () => {
 
 export const srvPaqueteDescripcionToArrayString = async () => {
   const paquetes = await srvObtenerFullPaquete();
-  const paquetesDesc: PaquetesEmbeddings[] = paquetes.map((paquete) => {
+  const paquetesDesc = paquetes.map((paquete) => {
     const elementos = paquete.elementospaquetes.map((elemento) => {
       if (elemento.tipo_elemento === "Producto") {
         return `${elemento.cantidad}x ${elemento.productos?.nombre}`;
@@ -119,7 +119,7 @@ export const srvPaqueteDescripcionToArrayString = async () => {
 
 export const srvPaquetePrecioToArraString = async () => {
   const paquetes = await srvObtenerFullPaquete();
-  const paquetesPrecio: PaquetesEmbeddings[] = paquetes.map((paquete) => {
+  const paquetesPrecio = paquetes.map((paquete) => {
     // const texto = `${paquete.nombre}. Precio: ${paquete.precio} ${paquete.moneda}`;
     return {
       paquete_id: paquete.paquete_id,
@@ -129,3 +129,48 @@ export const srvPaquetePrecioToArraString = async () => {
 
   return paquetesPrecio;
 };
+
+/**
+ * =================PAQUETES EMBEDDINGS=================
+ */
+
+export const srvInsertarPaqueteEmbedding = async (
+  paquetes: {
+    paquete_id: number;
+    descripcion: string;
+    embedding: number[];
+  }[]
+) => {
+  const paqEmbeddings = await prisma.paquetesEmbeddings.findMany({
+    where: {
+      paquete_id: {
+        in: paquetes.map((paq) => paq.paquete_id),
+      },
+    },
+  });
+
+  let count = 0;
+  for (const paquete of paquetes) {
+    const paqEmbedding = paqEmbeddings.filter(
+      (paqEmbedding) => paqEmbedding.paquete_id === paquete.paquete_id
+    );
+
+    if (paqEmbedding.length === 0) {
+      count +=
+        await prisma.$executeRaw`INSERT INTO "PaquetesEmbeddings" ("paquete_id", "descripcion", "embedding") VALUES
+        (${paquete.paquete_id}, ${paquete.descripcion}, ${paquete.embedding}::vector)`;
+    }
+  }
+  return count;
+};
+
+export const srvObtenerPaquetesEmbeddings = async (embedding: number[]) => {
+  const embeddingSQL = pgvector.toSql(embedding);
+  const similitudes: PaquetesEmbeddings[] = await prisma.$queryRaw`
+  SELECT "paquete_id", "descripcion", "embedding"::text FROM "PaquetesEmbeddings" ORDER BY "embedding" <-> ${embeddingSQL}::vector LIMIT 2`;
+
+  return similitudes;
+};
+/**
+ * =================PAQUETES EMBEDDINGS=================
+ */

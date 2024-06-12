@@ -16,7 +16,7 @@ import {
   srvPaquetePrecioToArraString,
 } from "../services/db/paquetes.service";
 
-import { generarEmbeddingsProductos } from "../services/embeddings.service";
+import { parseSQLToVector } from "../services/embeddings.service";
 
 export const ctrlObtenerDatos = catchedAsync(
   async (req: Request, res: Response) => {
@@ -42,9 +42,7 @@ export const ctrlObtenerDatos = catchedAsync(
 
 export const ctrlCargarEmbeddings = catchedAsync(
   async (req: Request, res: Response) => {
-    // Cargamos los embeddings de los productos
-    // await generarEmbeddingsProductos();
-    await generarEmbeddingsProductos();
+    await parseSQLToVector();
 
     response(res, 200, { message: "Embeddings cargados" });
   }

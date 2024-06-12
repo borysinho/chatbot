@@ -20,7 +20,7 @@ class TwilioRoutes {
     // });
     this.router.get("/statuscallback", (req, res) => {
       console.log({ CallBack: req.body });
-      res.send("OK");
+      res.status(200).send("Callback OK");
     });
     // this.router.post("/testia", ctrlSendMessage);
 

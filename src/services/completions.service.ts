@@ -1,6 +1,7 @@
 import { APIError } from "groq-sdk";
-import groq from "../objects/ia.object";
+import { groq } from "../objects/completions.object";
 import { HttpException } from "../utils";
+import {} from "../objects/completions.object";
 
 export const srvIASend = async (
   name: string,
@@ -83,4 +84,6 @@ export async function completarChat(
   return chatCompletion;
 }
 
-// main();
+/**
+ * ===================OPENAI CHAT===================
+ */

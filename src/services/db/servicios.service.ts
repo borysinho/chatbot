@@ -1,8 +1,9 @@
+import pgvector from "pgvector";
 import { ServiciosEmbeddings } from "@prisma/client";
-import client from "../../objects/prisma.object";
+import prisma from "../../objects/prisma.object";
 
 export const srvInsertarServicio = async (servicio: any) => {
-  const servicioCreado = await client.servicios.create({
+  const servicioCreado = await prisma.servicios.create({
     data: {
       nombre: servicio.nombre,
       descripcion: servicio.descripcion,
@@ -15,7 +16,7 @@ export const srvInsertarServicio = async (servicio: any) => {
 };
 
 export const srvObtenerServicios = async () => {
-  const servicios = await client.servicios.findMany({
+  const servicios = await prisma.servicios.findMany({
     select: {
       servicio_id: true,
       nombre: true,
@@ -30,7 +31,7 @@ export const srvObtenerServicios = async () => {
 };
 
 export const srvObtenerServicio = async (servicio_id: number) => {
-  const servicio = await client.servicios.findUnique({
+  const servicio = await prisma.servicios.findUnique({
     where: {
       servicio_id,
     },
@@ -43,7 +44,7 @@ export const srvActualizarServicio = async (
   servicio_id: number,
   servicio: any
 ) => {
-  const servicioActualizado = await client.servicios.update({
+  const servicioActualizado = await prisma.servicios.update({
     where: {
       servicio_id,
     },
@@ -59,7 +60,7 @@ export const srvActualizarServicio = async (
 };
 
 export const srvEliminarServicio = async (servicio_id: number) => {
-  const servicioEliminado = await client.servicios.delete({
+  const servicioEliminado = await prisma.servicios.delete({
     where: {
       servicio_id,
     },
@@ -71,7 +72,7 @@ export const srvEliminarServicio = async (servicio_id: number) => {
 export const srvServiciosDescToString = async () => {
   const servicios = await srvObtenerServicios();
 
-  const serviciosString: ServiciosEmbeddings[] = servicios.map((servicio) => {
+  const serviciosString = servicios.map((servicio) => {
     return {
       servicio_id: servicio.servicio_id,
       descripcion: `${servicio.nombre}. ${servicio.descripcion}`,
@@ -84,7 +85,7 @@ export const srvServiciosDescToString = async () => {
 export const srvServiciosPrecioToString = async () => {
   const servicios = await srvObtenerServicios();
 
-  const serviciosString: ServiciosEmbeddings[] = servicios.map((servicio) => {
+  const serviciosString = servicios.map((servicio) => {
     return {
       servicio_id: servicio.servicio_id,
       descripcion: `${servicio.nombre}. Costo: ${servicio.tarifa} ${servicio.moneda}`,
@@ -94,3 +95,51 @@ export const srvServiciosPrecioToString = async () => {
   // console.log({ serviciosString });
   return serviciosString;
 };
+
+/**
+ * ===============SERVICIOS EMDBEDDINGS================
+ */
+
+export const srvInsertarServicioEmbedding = async (
+  servicios: {
+    servicio_id: number;
+    descripcion: string;
+    embedding: number[];
+  }[]
+) => {
+  const servEmbeddings = await prisma.serviciosEmbeddings.findMany({
+    where: {
+      servicio_id: {
+        in: servicios.map((serv) => serv.servicio_id),
+      },
+    },
+  });
+
+  let count = 0;
+
+  for (const servicio of servicios) {
+    const servEmbedding = servEmbeddings.filter(
+      (servEmbedding) => servEmbedding.servicio_id === servicio.servicio_id
+    );
+
+    if (servEmbedding.length === 0) {
+      count +=
+        await prisma.$executeRaw`INSERT INTO "ServiciosEmbeddings" ("servicio_id", "descripcion", "embedding") VALUES
+        (${servicio.servicio_id}, ${servicio.descripcion}, ${servicio.embedding}::vector)`;
+    }
+  }
+
+  return count;
+};
+
+export const srvObtenerServiciosEmbeddings = async (embedding: number[]) => {
+  const embeddingSQL = pgvector.toSql(embedding);
+  const similitudes: ServiciosEmbeddings[] = await prisma.$queryRaw`
+  SELECT "servicio_id", "descripcion", "embedding"::text FROM "ServiciosEmbeddings" ORDER BY "embedding" <-> ${embeddingSQL}::vector LIMIT 2`;
+
+  return similitudes;
+};
+
+/**
+ * ===============SERVICIOS EMDBEDDINGS================
+ */
