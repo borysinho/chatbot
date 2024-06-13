@@ -3,6 +3,13 @@ import prisma from "../../objects/prisma.object";
 import { PaquetesEmbeddings } from "@prisma/client";
 import client from "../../objects/prisma.object";
 
+export type TPaquetesEmbeddings = {
+  paqueteembedding_id: number;
+  paquete_id: number;
+  descripcion: string;
+  embedding: number[];
+};
+
 export const srvInsertarPaquete = async (paquete: any) => {
   const paqueteCreado = await client.paquetes.create({
     data: {
@@ -152,22 +159,23 @@ export const srvInsertarPaqueteEmbedding = async (
   let count = 0;
   for (const paquete of paquetes) {
     const paqEmbedding = paqEmbeddings.filter(
-      (paqEmbedding) => paqEmbedding.paquete_id === paquete.paquete_id
+      (paq) => paq.paquete_id === paquete.paquete_id
     );
 
-    if (paqEmbedding.length === 0) {
+    if (paqEmbedding.length < 2) {
+      const embedding = pgvector.toSql(paquete.embedding);
       count +=
-        await prisma.$executeRaw`INSERT INTO "PaquetesEmbeddings" ("paquete_id", "descripcion", "embedding") VALUES
-        (${paquete.paquete_id}, ${paquete.descripcion}, ${paquete.embedding}::vector)`;
+        await prisma.$executeRaw`INSERT INTO "PaquetesEmbeddings" ( paquete_id, descripcion, embedding) VALUES
+        (${paquete.paquete_id}, ${paquete.descripcion}, ${embedding}::vector)`;
     }
   }
   return count;
 };
 
-export const srvObtenerPaquetesEmbeddings = async (embedding: number[]) => {
-  const embeddingSQL = pgvector.toSql(embedding);
-  const similitudes: PaquetesEmbeddings[] = await prisma.$queryRaw`
-  SELECT "paquete_id", "descripcion", "embedding"::text FROM "PaquetesEmbeddings" ORDER BY "embedding" <-> ${embeddingSQL}::vector LIMIT 2`;
+export const srvObtenerPaquetesEmbeddings = async (vector: number[]) => {
+  const embedding = pgvector.toSql(vector);
+  const similitudes: TPaquetesEmbeddings[] =
+    await prisma.$queryRaw`SELECT paqueteembedding_id, paquete_id, descripcion, embedding::text FROM "PaquetesEmbeddings" ORDER BY embedding <-> ${embedding}::vector LIMIT 2`;
 
   return similitudes;
 };

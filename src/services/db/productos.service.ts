@@ -12,6 +12,13 @@ import {
   ServiciosEmbeddings,
 } from "@prisma/client";
 
+export type TProductosEmbeddings = {
+  productoembedding_id: number;
+  producto_id: number;
+  descripcion: string;
+  embedding: number[];
+};
+
 export const srvInsertarProducto = async (producto: any) => {
   const productoCreado = await prisma.productos.create({
     data: {
@@ -113,6 +120,7 @@ export const srvInsertarProductoEmbedding = async (
     embedding: number[];
   }[]
 ) => {
+  // Obtener todos los elementos de la tabla ProductosEmbeddings que coincidan con los IDs de los productos proporcionados
   const prodEmbeddings = await prisma.productosEmbeddings.findMany({
     where: {
       producto_id: {
@@ -123,45 +131,27 @@ export const srvInsertarProductoEmbedding = async (
 
   let count = 0;
 
+  // Recorremos los productos proporcionados para insertarlos
   for (const producto of productos) {
     const prodEmbedding = prodEmbeddings.filter(
-      (prodEmbedding) => prodEmbedding.producto_id === producto.producto_id
+      (prod) => prod.producto_id === producto.producto_id
     );
 
-    console.log({ prodEmbedding });
-    if (prodEmbedding.length === 0) {
+    // Si no existe el producto en la tabla ProductosEmbeddings, lo insertamos
+    if (prodEmbedding.length < 2) {
       const embedding = pgvector.toSql(producto.embedding);
-      console.log({ prodEmbedding });
       count +=
         await prisma.$executeRaw`INSERT INTO "ProductosEmbeddings" (producto_id, descripcion, embedding) VALUES (${producto.producto_id}, ${producto.descripcion}, ${embedding}::vector)`;
-      // await prisma.$executeRaw`INSERT INTO items (embedding) VALUES (${embedding}::vector)`
-      // await prisma.$executeRaw`INSERT INTO "ProductosEmbeddings" (producto_id, descripcion, embedding) VALUES (${producto.producto_id}, ${producto.descripcion}, ${embedding}::vector)`;
-      // count +=
-      // await prisma.$executeRaw`INSERT INTO "ProductosEmbeddings" ("producto_id", "descripcion", "embedding") VALUES
-      //   (${producto.producto_id}, ${producto.descripcion}, ${producto.embedding}::vector)`;
     }
   }
 
   return count;
 };
 
-type TProductosEmbeddings = {
-  productoembedding_id: number;
-  producto_id: number;
-  descripcion: string;
-  embedding: number[];
-};
-
 export const srvObtenerProductoEmbedding = async (vector: number[]) => {
-  // const embeddingSQL = pgvector.toSql(embedding);
-
   const embedding = pgvector.toSql(vector);
-  console.log({ EstoRecibo: embedding });
-  const similitudes =
+  const similitudes: TProductosEmbeddings[] =
     await prisma.$queryRaw`SELECT productoembedding_id, producto_id, descripcion, embedding::text FROM "ProductosEmbeddings" ORDER BY embedding <-> ${embedding}::vector LIMIT 2`;
-
-  // const similitudes: ProductosEmbeddings[] = await prisma.$queryRaw`
-  // SELECT "producto_id", "descripcion", "embedding"::text FROM "ProductosEmbeddings" ORDER BY "embedding" <-> ${embedding}::vector LIMIT 2`;
 
   return similitudes;
 };

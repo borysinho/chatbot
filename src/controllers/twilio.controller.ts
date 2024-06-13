@@ -302,22 +302,25 @@ export const newMessage = catchedAsync(async (req: Request, res: Response) => {
     "user"
   );
 
-  console.log({ chat });
+  const vector = await embeberDocumento("UserInput", [chat.content]);
 
-  const embedding = await embeberDocumento([chat.content]);
-  // console.log({ embedding });
+  // Convertimos a embeddings el texto del usuario
+  const chatEmbeddings = await srvObtenerChatEmbeddings(
+    chat.cliente_id,
+    vector.data[0].embedding
+  );
 
-  const _chat = await srvObtenerChatEmbeddings(chat.cliente_id, embedding);
+  // Con los embeddings del texto del usuario buscamos en la base de datos de Embeddings
 
-  const count = await srvInsertarChatEmbeddings({
-    cliente_id: chat.cliente_id,
-    chat_id: chat.chat_id,
-    content: chat.content,
-    embedding,
-  });
+  // const count = await srvInsertarChatEmbeddings({
+  //   cliente_id: chat.cliente_id,
+  //   chat_id: chat.chat_id,
+  //   content: chat.content,
+  //   embedding: vector.data[0].embedding,
+  // });
 
-  const _prodDesc = await srvObtenerProductoEmbedding(embedding);
-  console.log({ _prodDesc });
+  // const _prodDesc = await srvObtenerProductoEmbedding(embedding);
+  // console.log({ _prodDesc });
   // console.log({ uno: _prodDesc[0], dos: _prodDesc[1]});
 
   // const chatCompletion = await completarChat(

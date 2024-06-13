@@ -1,6 +1,8 @@
 import { Request, Response } from "express";
 import { HttpException, catchedAsync, response } from "../utils";
 import {
+  TProductosEmbeddings,
+  srvObtenerProductoEmbedding,
   srvObtenerProductos,
   srvProdDescrToString,
   srvProdPrecioToString,
@@ -16,7 +18,11 @@ import {
   srvPaquetePrecioToArraString,
 } from "../services/db/paquetes.service";
 
-import { parseSQLToVector } from "../services/embeddings.service";
+import {
+  embeberDocumento,
+  parseSQLToVector,
+  realizarBusquedaSemantica,
+} from "../services/embeddings.service";
 
 export const ctrlObtenerDatos = catchedAsync(
   async (req: Request, res: Response) => {
@@ -45,5 +51,33 @@ export const ctrlCargarEmbeddings = catchedAsync(
     await parseSQLToVector();
 
     response(res, 200, { message: "Embeddings cargados" });
+  }
+);
+
+export const ctrlBusquedaSemanticaProductos = catchedAsync(
+  async (req: Request, res: Response) => {
+    const { texto } = req.body;
+    const embedding = await embeberDocumento("Texto de Usuario", [texto]);
+    const { productos, servicios, paquetes } = await realizarBusquedaSemantica(
+      embedding.data[0].embedding
+    );
+
+    response(res, 200, {
+      productos: productos.map((item) => ({
+        productoembedding_id: item.productoembedding_id,
+        producto_id: item.producto_id,
+        descripcion: item.descripcion,
+      })),
+      servicios: servicios.map((item) => ({
+        servicioembedding_id: item.servicioembedding_id,
+        servicio_id: item.servicio_id,
+        descripcion: item.descripcion,
+      })),
+      paquetes: paquetes.map((item) => ({
+        paqueteembedding_id: item.paqueteembedding_id,
+        paquete_id: item.paquete_id,
+        descripcion: item.descripcion,
+      })),
+    });
   }
 );

@@ -2,6 +2,13 @@ import pgvector from "pgvector";
 import { ServiciosEmbeddings } from "@prisma/client";
 import prisma from "../../objects/prisma.object";
 
+export type TServiciosEmbeddings = {
+  servicioembedding_id: number;
+  servicio_id: number;
+  descripcion: string;
+  embedding: number[];
+};
+
 export const srvInsertarServicio = async (servicio: any) => {
   const servicioCreado = await prisma.servicios.create({
     data: {
@@ -117,25 +124,27 @@ export const srvInsertarServicioEmbedding = async (
 
   let count = 0;
 
+  // Recorremos los productos proporcionados para insertarlos
   for (const servicio of servicios) {
     const servEmbedding = servEmbeddings.filter(
-      (servEmbedding) => servEmbedding.servicio_id === servicio.servicio_id
+      (serv) => serv.servicio_id === servicio.servicio_id
     );
 
-    if (servEmbedding.length === 0) {
+    // Si no existe un embedding para el servicio, lo insertamos
+    if (servEmbedding.length < 2) {
+      const embedding = pgvector.toSql(servicio.embedding);
       count +=
-        await prisma.$executeRaw`INSERT INTO "ServiciosEmbeddings" ("servicio_id", "descripcion", "embedding") VALUES
-        (${servicio.servicio_id}, ${servicio.descripcion}, ${servicio.embedding}::vector)`;
+        await prisma.$executeRaw`INSERT INTO "ServiciosEmbeddings" (servicio_id, descripcion, embedding) VALUES (${servicio.servicio_id}, ${servicio.descripcion}, ${embedding}::vector)`;
     }
   }
 
   return count;
 };
 
-export const srvObtenerServiciosEmbeddings = async (embedding: number[]) => {
-  const embeddingSQL = pgvector.toSql(embedding);
-  const similitudes: ServiciosEmbeddings[] = await prisma.$queryRaw`
-  SELECT "servicio_id", "descripcion", "embedding"::text FROM "ServiciosEmbeddings" ORDER BY "embedding" <-> ${embeddingSQL}::vector LIMIT 2`;
+export const srvObtenerServiciosEmbeddings = async (vector: number[]) => {
+  const embedding = pgvector.toSql(vector);
+  const similitudes: TServiciosEmbeddings[] =
+    await prisma.$queryRaw`SELECT servicioembedding_id, servicio_id, descripcion, embedding::text FROM "ServiciosEmbeddings" ORDER BY embedding <-> ${embedding}::vector LIMIT 2`;
 
   return similitudes;
 };
