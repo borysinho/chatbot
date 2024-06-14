@@ -4,18 +4,18 @@ import {
   TProductosEmbeddings,
   srvObtenerProductoEmbedding,
   srvObtenerProductos,
-  srvProdDescrToString,
-  srvProdPrecioToString,
+  srvProdDescrToEmbeddings,
+  srvProdPrecioToEmbeddings,
 } from "../services/db/productos.service";
 import {
   srvObtenerServicios,
-  srvServiciosDescToString,
-  srvServiciosPrecioToString,
+  srvServiciosDescToEmbeddings,
+  srvServiciosPrecioToEmbeddings,
 } from "../services/db/servicios.service";
 import {
   srvObtenerFullPaquete,
-  srvPaqueteDescripcionToArrayString,
-  srvPaquetePrecioToArraString,
+  srvPaqueteDescripcionToEmbeddings,
+  srvPaquetePrecioToEmbeddings,
 } from "../services/db/paquetes.service";
 
 import {
@@ -26,12 +26,12 @@ import {
 
 export const ctrlObtenerDatos = catchedAsync(
   async (req: Request, res: Response) => {
-    const productoDescripcion = await srvProdDescrToString();
-    const productoPrecio = await srvProdPrecioToString();
-    const servicioDescripcion = await srvServiciosDescToString();
-    const servicioPrecio = await srvServiciosPrecioToString();
-    const paqueteDescripcion = await srvPaqueteDescripcionToArrayString();
-    const paquetePrecio = await srvPaquetePrecioToArraString();
+    const productoDescripcion = await srvProdDescrToEmbeddings();
+    const productoPrecio = await srvProdPrecioToEmbeddings();
+    const servicioDescripcion = await srvServiciosDescToEmbeddings();
+    const servicioPrecio = await srvServiciosPrecioToEmbeddings();
+    const paqueteDescripcion = await srvPaqueteDescripcionToEmbeddings();
+    const paquetePrecio = await srvPaquetePrecioToEmbeddings();
 
     console.log({
       productoDescripcion,
@@ -56,28 +56,27 @@ export const ctrlCargarEmbeddings = catchedAsync(
 
 export const ctrlBusquedaSemanticaProductos = catchedAsync(
   async (req: Request, res: Response) => {
-    const { texto } = req.body;
-    const embedding = await embeberDocumento("Texto de Usuario", [texto]);
-    const { productos, servicios, paquetes } = await realizarBusquedaSemantica(
-      embedding.data[0].embedding
-    );
-
-    response(res, 200, {
-      productos: productos.map((item) => ({
-        productoembedding_id: item.productoembedding_id,
-        producto_id: item.producto_id,
-        descripcion: item.descripcion,
-      })),
-      servicios: servicios.map((item) => ({
-        servicioembedding_id: item.servicioembedding_id,
-        servicio_id: item.servicio_id,
-        descripcion: item.descripcion,
-      })),
-      paquetes: paquetes.map((item) => ({
-        paqueteembedding_id: item.paqueteembedding_id,
-        paquete_id: item.paquete_id,
-        descripcion: item.descripcion,
-      })),
-    });
+    // const { texto } = req.body;
+    // const embedding = await embeberDocumento("Texto de Usuario", [texto]);
+    // const { productos, servicios, paquetes } = await realizarBusquedaSemantica(
+    //   embedding.data[0].embedding
+    // );
+    // response(res, 200, {
+    //   productos: productos.map((item) => ({
+    //     productoembedding_id: item.productoembedding_id,
+    //     producto_id: item.producto_id,
+    //     descripcion: item.descripcion,
+    //   })),
+    //   servicios: servicios.map((item) => ({
+    //     servicioembedding_id: item.servicioembedding_id,
+    //     servicio_id: item.servicio_id,
+    //     descripcion: item.descripcion,
+    //   })),
+    //   paquetes: paquetes.map((item) => ({
+    //     paqueteembedding_id: item.paqueteembedding_id,
+    //     paquete_id: item.paquete_id,
+    //     descripcion: item.descripcion,
+    //   })),
+    // });
   }
 );

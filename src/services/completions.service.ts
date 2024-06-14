@@ -1,7 +1,11 @@
 import { APIError } from "groq-sdk";
-import { groq } from "../objects/completions.object";
+import { groq, openaiComplettions } from "../objects/completions.object";
 import { HttpException } from "../utils";
 import {} from "../objects/completions.object";
+import { TChatEmbeddings } from "./db/chat.service";
+import { Role } from "@prisma/client";
+import OpenAI from "openai";
+// import { chatModel } from "../objects/completions.object";
 
 export const srvIASend = async (
   name: string,
@@ -54,32 +58,33 @@ export const srvIASend = async (
 //   },
 // ];
 
-type CompletionMessageType = {
-  role: string;
-  content: string;
-};
-
 export async function completarChat(
   whatsappNumber: string,
   nombreUsuario: string,
   systemTemplate: CompletionMessageType[],
-  historialChat: CompletionMessageType[]
+  historialChat: CompletionMessageType[],
+  lastUserMessage: string
 ) {
   // const messages: CompletionMessageType[] = [];
 
   // console.log({ messages });
-  const messages = systemTemplate.concat(historialChat);
+  const messages = systemTemplate
+    .concat(historialChat)
+    .concat({ role: "user", content: lastUserMessage });
 
   const chatCompletion = await groq.chat.completions.create({
     messages,
     model: "mixtral-8x7b-32768",
+    // model: "gpt-3.5-turbo",
     temperature: 0,
-    max_tokens: 150,
-    top_p: 0,
+    // max_tokens: 150,
+    // top_p: 0,
     stream: false,
     stop: null,
     user: nombreUsuario,
   });
+
+  console.log({ chatCompletion });
 
   return chatCompletion;
 }
@@ -87,3 +92,79 @@ export async function completarChat(
 /**
  * ===================OPENAI CHAT===================
  */
+
+export type CompletionMessageType = {
+  role: string;
+  content: string;
+};
+
+export const systemContext = (contentArray: string[]) => {
+  return `Eres una IA especialista en venta de servicios, productos y paquetes de weeding planner.
+1. No te salgas de contexto. Si el usuario pregunta por cosas que no se encuentran en el catálogo, deberás contestar lo más gentilmente posible que solo vendes productos y servicios para planes de bodas.
+2. Las respuestas que generas no deben exceder los 250 caracteres.
+3. No proveas precios a menos que te lo pidan.
+A continuación envío el contexto para que elabores las respuestas:
+${contentArray.map((cadena: string) => cadena).join("\n")}`;
+};
+
+export const openAICompletion = async (
+  chat: CompletionMessageType[],
+  context: string[],
+  lastUserMessage: string
+) => {
+  //Agegamos el contexto
+  const contexto: CompletionMessageType = {
+    role: "system",
+    content: systemContext(context),
+  };
+
+  const messages = [contexto].concat(chat);
+
+  console.log({ messages });
+
+  // const openai = new OpenAI({
+  //   apiKey: process.env.OPENAI_API_KEY,
+  // });
+  const completion = await openaiComplettions.chat.completions.create({
+    messages: [
+      { role: "system", content: systemContext(context) },
+      { role: "user", content: lastUserMessage },
+    ],
+    model: "gpt-3.5-turbo",
+    temperature: 0,
+  });
+
+  // const completion = await openai.chat.completions.create({
+  //   messages: [
+  //     { role: "system", content: contexto.content },
+  //     { role: "user", content: lastUserMessage },
+  //   ],
+  //   model: "gpt-3.5-turbo",
+  //   temperature: 0,
+  // });
+
+  console.log({ completion });
+
+  return completion;
+
+  // const messages: CompletionMessageType[] = chat.map((item) => ({
+  //   role: item.role,
+  //   content: item.descripcion,
+  // }));
+
+  // const x = messages.concat({ role: Role.user, content: lastUserMessage });
+
+  // console.log({ messages });
+  // openaiComplettions.chat.completions.create({
+  //   messages: [
+  //     { role: "system", content: "You are a helpful assistant." },
+  //     { role: "user", content: "Who won the world series in 2020?" },
+  //     {
+  //       role: "assistant",
+  //       content: "The Los Angeles Dodgers won the World Series in 2020.",
+  //     },
+  //     { role: "user", content: "Where was it played?" },
+  //   ],
+  //   model: "gpt-3.5-turbo",
+  // });
+};

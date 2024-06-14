@@ -9,35 +9,17 @@ datasource db {
   extensions = [vector]
 }
 
-model ProductosEmbeddings {
-  productoembedding_id Int                         @id @default(autoincrement())
-  producto_id          Int
-  descripcion          String
-  embedding            Unsupported("vector(500)")?
-
-  productos Productos @relation(fields: [producto_id], references: [producto_id])
-}
-
-model ServiciosEmbeddings {
-  servicioembedding_id Int                         @id @default(autoincrement())
-  servicio_id          Int
-  descripcion          String
-  embedding            Unsupported("vector(500)")?
-
-  servicios Servicios @relation(fields: [servicio_id], references: [servicio_id])
-}
-
-model PaquetesEmbeddings {
-  paqueteembedding_id Int                         @id @default(autoincrement())
-  paquete_id          Int
-  descripcion         String
-  embedding           Unsupported("vector(500)")?
-
-  paquetes Paquetes @relation(fields: [paquete_id], references: [paquete_id])
+model Documents {
+  document_id Int                         @id @default(autoincrement())
+  ref_id      Int
+  clase       String
+  descripcion String                      @db.Text
+  embedding   Unsupported("vector(500)")?
 }
 
 model ChatEmbeddings {
   descripcion String
+  role        Role
   embedding   Unsupported("vector(500)")?
 
   chat_id Int  @id
@@ -177,7 +159,6 @@ model Paquetes {
   detallescotizaciones DetallesCotizaciones[]
   detallesventas       DetallesVentas[]
   elementospaquetes    ElementosPaquetes[]
-  PaquetesEmbeddings   PaquetesEmbeddings[]
 }
 
 model ProduccionDemandada {
@@ -203,7 +184,6 @@ model Productos {
   detallesventas              DetallesVentas[]
   disponibilidadgeneral       DisponibilidadGeneral[]
   elementospaquetes           ElementosPaquetes[]
-  productosembeddings         ProductosEmbeddings[]
 }
 
 model ReservasServicios {
@@ -233,7 +213,6 @@ model Servicios {
   disponibilidadgeneral DisponibilidadGeneral[]
   elementospaquetes     ElementosPaquetes[]
   reservasservicios     ReservasServicios[]
-  ServiciosEmbeddings   ServiciosEmbeddings[]
 }
 
 model Ventas {

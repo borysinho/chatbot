@@ -1,6 +1,9 @@
 import pgvector from "pgvector";
-import { ServiciosEmbeddings } from "@prisma/client";
+// import { ServiciosEmbeddings } from "@prisma/client";
 import prisma from "../../objects/prisma.object";
+import { embeberDocumento } from "../embeddings.service";
+import { TDocuments, srvInsertarDocumento } from "./documents.service";
+import { formatearTiempo } from "../../utils";
 
 export type TServiciosEmbeddings = {
   servicioembedding_id: number;
@@ -76,31 +79,53 @@ export const srvEliminarServicio = async (servicio_id: number) => {
   return servicioEliminado;
 };
 
-export const srvServiciosDescToString = async () => {
+export const srvServiciosDescToEmbeddings = async () => {
   const servicios = await srvObtenerServicios();
+  const embeddings = await embeberDocumento(
+    "servicio-descripcion",
+    servicios.map((servicio) => `${servicio.nombre}. ${servicio.descripcion}`)
+  );
 
-  const serviciosString = servicios.map((servicio) => {
+  const serviciosArray: TDocuments[] = servicios.map((servicio, i: number) => {
     return {
-      servicio_id: servicio.servicio_id,
+      ref_id: servicio.servicio_id,
+      clase: "servicio-descripcion",
       descripcion: `${servicio.nombre}. ${servicio.descripcion}`,
+      embedding: embeddings.data[i].embedding,
     };
   });
 
-  return serviciosString;
+  await srvInsertarDocumento(serviciosArray);
+
+  return serviciosArray;
 };
 
-export const srvServiciosPrecioToString = async () => {
+export const srvServiciosPrecioToEmbeddings = async () => {
   const servicios = await srvObtenerServicios();
+  const embeddings = await embeberDocumento(
+    "servicio-precio",
+    servicios.map(
+      (servicio) =>
+        `${servicio.nombre}. Costo: ${servicio.tarifa} ${
+          servicio.moneda
+        } por ${formatearTiempo(servicio.duracion_en_horas * 60 * 60)}`
+    )
+  );
 
-  const serviciosString = servicios.map((servicio) => {
+  const serviciosArray: TDocuments[] = servicios.map((servicio, i: number) => {
     return {
-      servicio_id: servicio.servicio_id,
-      descripcion: `${servicio.nombre}. Costo: ${servicio.tarifa} ${servicio.moneda}`,
+      ref_id: servicio.servicio_id,
+      clase: "servicio-precio",
+      descripcion: `${servicio.nombre}. Costo: ${servicio.tarifa} ${
+        servicio.moneda
+      } por ${formatearTiempo(servicio.duracion_en_horas * 60 * 60)}`,
+      embedding: embeddings.data[i].embedding,
     };
   });
 
-  // console.log({ serviciosString });
-  return serviciosString;
+  await srvInsertarDocumento(serviciosArray);
+
+  return serviciosArray;
 };
 
 /**
@@ -114,31 +139,27 @@ export const srvInsertarServicioEmbedding = async (
     embedding: number[];
   }[]
 ) => {
-  const servEmbeddings = await prisma.serviciosEmbeddings.findMany({
-    where: {
-      servicio_id: {
-        in: servicios.map((serv) => serv.servicio_id),
-      },
-    },
-  });
-
-  let count = 0;
-
-  // Recorremos los productos proporcionados para insertarlos
-  for (const servicio of servicios) {
-    const servEmbedding = servEmbeddings.filter(
-      (serv) => serv.servicio_id === servicio.servicio_id
-    );
-
-    // Si no existe un embedding para el servicio, lo insertamos
-    if (servEmbedding.length < 2) {
-      const embedding = pgvector.toSql(servicio.embedding);
-      count +=
-        await prisma.$executeRaw`INSERT INTO "ServiciosEmbeddings" (servicio_id, descripcion, embedding) VALUES (${servicio.servicio_id}, ${servicio.descripcion}, ${embedding}::vector)`;
-    }
-  }
-
-  return count;
+  // const servEmbeddings = await prisma.serviciosEmbeddings.findMany({
+  //   where: {
+  //     servicio_id: {
+  //       in: servicios.map((serv) => serv.servicio_id),
+  //     },
+  //   },
+  // });
+  // let count = 0;
+  // // Recorremos los productos proporcionados para insertarlos
+  // for (const servicio of servicios) {
+  //   const servEmbedding = servEmbeddings.filter(
+  //     (serv) => serv.servicio_id === servicio.servicio_id
+  //   );
+  //   // Si no existe un embedding para el servicio, lo insertamos
+  //   if (servEmbedding.length < 2) {
+  //     const embedding = pgvector.toSql(servicio.embedding);
+  //     count +=
+  //       await prisma.$executeRaw`INSERT INTO "ServiciosEmbeddings" (servicio_id, descripcion, embedding) VALUES (${servicio.servicio_id}, ${servicio.descripcion}, ${embedding}::vector)`;
+  //   }
+  // }
+  // return count;
 };
 
 export const srvObtenerServiciosEmbeddings = async (vector: number[]) => {
