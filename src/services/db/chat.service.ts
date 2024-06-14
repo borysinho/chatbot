@@ -1,7 +1,6 @@
 import { Role } from "@prisma/client";
 import pgvector from "pgvector";
 import prisma from "../../objects/prisma.object";
-import { embeberDocumento } from "../embeddings.service";
 
 export type TChatEmbeddings = {
   chat_id?: number;
@@ -34,16 +33,6 @@ export const srvInsertarChat = async (
       },
     },
   });
-
-  // const embedding = await embeberDocumento(`chat-${role}`, [content]);
-
-  // await srvChatToEmbeddings({
-  //   cliente_id: chat.cliente_id,
-  //   chat_id: chat.chat_id,
-  //   role: chat.role,
-  //   content: chat.content,
-  //   embedding: embedding.data[0].embedding,
-  // });
 
   return chat;
 };
@@ -103,7 +92,3 @@ export const srvObtenerChat = async (
     return [];
   }
 };
-
-/**
- * =================CHAT EMBEDDINGS=================
- */

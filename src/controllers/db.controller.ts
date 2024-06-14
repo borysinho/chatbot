@@ -1,9 +1,6 @@
 import { Request, Response } from "express";
 import { HttpException, catchedAsync, response } from "../utils";
 import {
-  TProductosEmbeddings,
-  srvObtenerProductoEmbedding,
-  srvObtenerProductos,
   srvProdDescrToEmbeddings,
   srvProdPrecioToEmbeddings,
 } from "../services/db/productos.service";
@@ -55,28 +52,5 @@ export const ctrlCargarEmbeddings = catchedAsync(
 );
 
 export const ctrlBusquedaSemanticaProductos = catchedAsync(
-  async (req: Request, res: Response) => {
-    // const { texto } = req.body;
-    // const embedding = await embeberDocumento("Texto de Usuario", [texto]);
-    // const { productos, servicios, paquetes } = await realizarBusquedaSemantica(
-    //   embedding.data[0].embedding
-    // );
-    // response(res, 200, {
-    //   productos: productos.map((item) => ({
-    //     productoembedding_id: item.productoembedding_id,
-    //     producto_id: item.producto_id,
-    //     descripcion: item.descripcion,
-    //   })),
-    //   servicios: servicios.map((item) => ({
-    //     servicioembedding_id: item.servicioembedding_id,
-    //     servicio_id: item.servicio_id,
-    //     descripcion: item.descripcion,
-    //   })),
-    //   paquetes: paquetes.map((item) => ({
-    //     paqueteembedding_id: item.paqueteembedding_id,
-    //     paquete_id: item.paquete_id,
-    //     descripcion: item.descripcion,
-    //   })),
-    // });
-  }
+  async (req: Request, res: Response) => {}
 );

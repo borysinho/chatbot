@@ -104,7 +104,6 @@ export const srvProdDescrToEmbeddings = async () => {
   });
 
   await srvInsertarDocumento(productosArray);
-  // console.log("Productos-Descripcion insertados: ", cant);
 
   return productosArray;
 };
@@ -129,14 +128,9 @@ export const srvProdPrecioToEmbeddings = async () => {
   });
 
   await srvInsertarDocumento(productosArray);
-  // console.log("Productos-Precios insertados: ", cant);
 
   return productosArray;
 };
-
-/**
- * =====================PRODUCTOS EMBEDDINGS=====================
- */
 
 export const srvInsertarProductoEmbedding = async (
   productos: {
@@ -144,30 +138,7 @@ export const srvInsertarProductoEmbedding = async (
     descripcion: string;
     embedding: number[];
   }[]
-) => {
-  // Obtener todos los elementos de la tabla ProductosEmbeddings que coincidan con los IDs de los productos proporcionados
-  // const prodEmbeddings = await prisma.productosEmbeddings.findMany({
-  //   where: {
-  //     producto_id: {
-  //       in: productos.map((prod) => prod.producto_id),
-  //     },
-  //   },
-  // });
-  // let count = 0;
-  // // Recorremos los productos proporcionados para insertarlos
-  // for (const producto of productos) {
-  //   const prodEmbedding = prodEmbeddings.filter(
-  //     (prod) => prod.producto_id === producto.producto_id
-  //   );
-  //   // Si no existe el producto en la tabla ProductosEmbeddings, lo insertamos
-  //   if (prodEmbedding.length < 2) {
-  //     const embedding = pgvector.toSql(producto.embedding);
-  //     count +=
-  //       await prisma.$executeRaw`INSERT INTO "ProductosEmbeddings" (producto_id, descripcion, embedding) VALUES (${producto.producto_id}, ${producto.descripcion}, ${embedding}::vector)`;
-  //   }
-  // }
-  // return count;
-};
+) => {};
 
 export const srvObtenerProductoEmbedding = async (vector: number[]) => {
   const embedding = pgvector.toSql(vector);
@@ -176,7 +147,3 @@ export const srvObtenerProductoEmbedding = async (vector: number[]) => {
 
   return similitudes;
 };
-
-/**
- * =====================PRODUCTOS EMBEDDINGS=====================
- */

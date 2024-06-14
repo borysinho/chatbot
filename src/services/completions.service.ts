@@ -1,11 +1,5 @@
-import { APIError } from "groq-sdk";
 import { groq, openaiComplettions } from "../objects/completions.object";
 import { HttpException } from "../utils";
-import {} from "../objects/completions.object";
-import { TChatEmbeddings } from "./db/chat.service";
-import { Role } from "@prisma/client";
-import OpenAI from "openai";
-// import { chatModel } from "../objects/completions.object";
 
 export const srvIASend = async (
   name: string,
@@ -49,15 +43,6 @@ export const srvIASend = async (
   return completion;
 };
 
-// const systemMessage = [
-//   {
-//     role: "system",
-//     content: `Eres una IA que pricipalmente vende servicios y productos de Weeding Planner, pero también vende servicios y productos individuales.
-//     No debes especificar las cantidades de los productos o servicios existentes, en su lugar, consulta al usuario de manera educada cuántos desea.
-//     En caso de que consulten por un producto o servicio que no exista, debes responder que no se encuentra disponible y ofrecer productos o servicios similares.`,
-//   },
-// ];
-
 export async function completarChat(
   whatsappNumber: string,
   nombreUsuario: string,
@@ -65,9 +50,6 @@ export async function completarChat(
   historialChat: CompletionMessageType[],
   lastUserMessage: string
 ) {
-  // const messages: CompletionMessageType[] = [];
-
-  // console.log({ messages });
   const messages = systemTemplate
     .concat(historialChat)
     .concat({ role: "user", content: lastUserMessage });
@@ -75,16 +57,11 @@ export async function completarChat(
   const chatCompletion = await groq.chat.completions.create({
     messages,
     model: "mixtral-8x7b-32768",
-    // model: "gpt-3.5-turbo",
     temperature: 0,
-    // max_tokens: 150,
-    // top_p: 0,
     stream: false,
     stop: null,
     user: nombreUsuario,
   });
-
-  console.log({ chatCompletion });
 
   return chatCompletion;
 }
@@ -117,14 +94,9 @@ export const openAICompletion = async (
     role: "system",
     content: systemContext(context),
   };
-
   const messages = [contexto].concat(chat);
-
   console.log({ messages });
 
-  // const openai = new OpenAI({
-  //   apiKey: process.env.OPENAI_API_KEY,
-  // });
   const completion = await openaiComplettions.chat.completions.create({
     messages: [
       { role: "system", content: systemContext(context) },
@@ -134,37 +106,7 @@ export const openAICompletion = async (
     temperature: 0,
   });
 
-  // const completion = await openai.chat.completions.create({
-  //   messages: [
-  //     { role: "system", content: contexto.content },
-  //     { role: "user", content: lastUserMessage },
-  //   ],
-  //   model: "gpt-3.5-turbo",
-  //   temperature: 0,
-  // });
-
   console.log({ completion });
 
   return completion;
-
-  // const messages: CompletionMessageType[] = chat.map((item) => ({
-  //   role: item.role,
-  //   content: item.descripcion,
-  // }));
-
-  // const x = messages.concat({ role: Role.user, content: lastUserMessage });
-
-  // console.log({ messages });
-  // openaiComplettions.chat.completions.create({
-  //   messages: [
-  //     { role: "system", content: "You are a helpful assistant." },
-  //     { role: "user", content: "Who won the world series in 2020?" },
-  //     {
-  //       role: "assistant",
-  //       content: "The Los Angeles Dodgers won the World Series in 2020.",
-  //     },
-  //     { role: "user", content: "Where was it played?" },
-  //   ],
-  //   model: "gpt-3.5-turbo",
-  // });
 };

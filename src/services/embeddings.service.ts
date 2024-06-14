@@ -5,19 +5,14 @@ import {
   readFileSync,
   access,
   mkdirSync,
-  readSync,
-  accessSync,
   readdirSync,
 } from "fs";
 import { openaiEmbeddings } from "../objects/embeddings.object";
 import {
-  // srvInsertarPaqueteEmbedding,
-  // srvObtenerPaquetesEmbeddings,
   srvPaqueteDescripcionToEmbeddings,
   srvPaquetePrecioToEmbeddings,
 } from "./db/paquetes.service";
 import {
-  srvInsertarProductoEmbedding,
   srvObtenerProductoEmbedding,
   srvProdDescrToEmbeddings,
   srvProdPrecioToEmbeddings,
@@ -28,13 +23,6 @@ import {
   srvServiciosDescToEmbeddings,
   srvServiciosPrecioToEmbeddings,
 } from "./db/servicios.service";
-import { srvInsertarChat } from "./db/chat.service";
-import {
-  Clientes,
-  // ProductosEmbeddings,
-  // Role,
-  // ServiciosEmbeddings,
-} from "@prisma/client";
 import { srvEliminarDocumentos } from "./db/documents.service";
 
 export const embeberDocumento = async (
@@ -112,17 +100,7 @@ const insertarEmbeddingsAObjeto = async (
 };
 
 export const parseSQLToVector = async () => {
-  // let prodDesc: any;
-  // let prodPrecio: any;
-  // let servDesc: any;
-  // let servPrecio: any;
-  // let paqDesc: any;
-  // let paqPrecio: any;
-
-  // let recienCargados = false;
-
   try {
-    // console.log("Generando archivos JSON...");
     // Obtenemos los datos de la BD
     await srvEliminarDocumentos();
     await srvProdDescrToEmbeddings();
@@ -132,82 +110,20 @@ export const parseSQLToVector = async () => {
     await srvPaqueteDescripcionToEmbeddings();
     await srvPaquetePrecioToEmbeddings();
     console.log("Embeddings cargados.");
-
-    // Insertamos los embeddings en los objetos
-    // prodDesc = await insertarEmbeddingsAObjeto(
-    //   "Producto Descripcion",
-    //   prodDesc
-    // );
-    // prodPrecio = await insertarEmbeddingsAObjeto(
-    //   "Producto Precio",
-    //   prodPrecio
-    // );
-    // servDesc = await insertarEmbeddingsAObjeto(
-    //   "Servicio Descripcion",
-    //   servDesc
-    // );
-    // servPrecio = await insertarEmbeddingsAObjeto(
-    //   "Servicio Precio",
-    //   servPrecio
-    // );
-    // paqDesc = await insertarEmbeddingsAObjeto("Paquete Descripcion", paqDesc);
-    // paqPrecio = await insertarEmbeddingsAObjeto("Paquete Precio", paqPrecio);
-
-    // Exportamos los objetos a archivos JSON para su posterior uso
-    // await exportarData(prodDesc, folder, "ProductoDescripcion");
-    // await exportarData(prodPrecio, folder, "ProductoPrecio");
-    // await exportarData(servDesc, folder, "ServicioDescripcion");
-    // await exportarData(servPrecio, folder, "ServicioPrecio");
-    // await exportarData(paqDesc, folder, "PaqueteDescripcion");
-    // await exportarData(paqPrecio, folder, "PaquetePrecio");
-
-    // recienCargados = true;
-
-    // console.log("Archivos JSON generados.");
   } catch (error) {
     console.error(error);
     return error;
   }
-  // } else {
-  // Si los archivos existen, los cargamos en objetos independientes
-  // prodDesc = await FileToObject(folder, "ProductoDescripcion");
-  // prodPrecio = await FileToObject(folder, "ProductoPrecio");
-  // servDesc = await FileToObject(folder, "ServicioDescripcion");
-  // servPrecio = await FileToObject(folder, "ServicioPrecio");
-  // paqDesc = await FileToObject(folder, "PaqueteDescripcion");
-  // paqPrecio = await FileToObject(folder, "PaquetePrecio");
-  // }
-
-  // Insertamos los embeddings en la BD en sus correspondientes tablas
-  // const prodDescCount = await srvInsertarProductoEmbedding(prodDesc);
-  // const prodPrecioCount = await srvInsertarProductoEmbedding(prodPrecio);
-  // const servDescCount = await srvInsertarServicioEmbedding(servDesc);
-  // const servPrecioCount = await srvInsertarServicioEmbedding(servPrecio);
-  // const paqDescCount = await srvInsertarPaqueteEmbedding(paqDesc);
-  // const paqPrecioCount = await srvInsertarPaqueteEmbedding(paqPrecio);
-
-  // console.log("Datos insertados: /n", {
-  // ProductosDescripcion: prodDescCount,
-  // ProductosPrecios: prodPrecioCount,
-  // ServiciosDescripcion: servDescCount,
-  // ServiciosPrecios: servPrecioCount,
-  //   PaquetesDescripcion: paqDescCount,
-  //   PaquetesPrecios: paqPrecioCount,
-  // });
 };
 
 export const realizarBusquedaSemantica = async (vector: number[]) => {
   const productos = await srvObtenerProductoEmbedding(vector);
   const servicios = await srvObtenerServiciosEmbeddings(vector);
-  // const paquetes = await srvObtenerPaquetesEmbeddings(vector);
-
-  // return { productos, servicios, paquetes };
 };
 
 export const realizarBusquedaSemanticaFiltrada = async (vector: number[]) => {
   const productos = await srvObtenerProductoEmbedding(vector);
   const servicios = await srvObtenerServiciosEmbeddings(vector);
-  // const paquetes = await srvObtenerPaquetesEmbeddings(vector);
 
   const embedding = pgvector.toSql(vector);
 

@@ -138,29 +138,7 @@ export const srvInsertarServicioEmbedding = async (
     descripcion: string;
     embedding: number[];
   }[]
-) => {
-  // const servEmbeddings = await prisma.serviciosEmbeddings.findMany({
-  //   where: {
-  //     servicio_id: {
-  //       in: servicios.map((serv) => serv.servicio_id),
-  //     },
-  //   },
-  // });
-  // let count = 0;
-  // // Recorremos los productos proporcionados para insertarlos
-  // for (const servicio of servicios) {
-  //   const servEmbedding = servEmbeddings.filter(
-  //     (serv) => serv.servicio_id === servicio.servicio_id
-  //   );
-  //   // Si no existe un embedding para el servicio, lo insertamos
-  //   if (servEmbedding.length < 2) {
-  //     const embedding = pgvector.toSql(servicio.embedding);
-  //     count +=
-  //       await prisma.$executeRaw`INSERT INTO "ServiciosEmbeddings" (servicio_id, descripcion, embedding) VALUES (${servicio.servicio_id}, ${servicio.descripcion}, ${embedding}::vector)`;
-  //   }
-  // }
-  // return count;
-};
+) => {};
 
 export const srvObtenerServiciosEmbeddings = async (vector: number[]) => {
   const embedding = pgvector.toSql(vector);
