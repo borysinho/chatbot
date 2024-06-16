@@ -13,16 +13,16 @@ INSERT INTO "Productos" (nombre, descripcion, precio, moneda, stock) VALUES
 
 -- Servicios
 INSERT INTO "Servicios" (nombre, descripcion, tarifa, moneda, duracion_en_horas) VALUES
-('Coordinación del Día de la Boda', 'Coordinación completa del día de la boda para asegurar que todo salga perfecto.', 7000.00, 'BS', 720),
-('Planificación Completa de la Boda', 'Servicio integral de planificación de la boda, desde la selección del lugar hasta la coordinación con proveedores.', 42000.00, 'BS', 43200),
-('Decoración y Diseño del Evento', 'Diseño y decoración del lugar del evento de acuerdo a los gustos y preferencias de los novios.', 12600.00, 'BS', 1440),
-('Servicio de Catering Gourmet', 'Servicio de catering con menús gourmet personalizados para los invitados.', 21000.00, 'BS', 240),
-('Fotografía y Video Profesional', 'Servicio de fotografía y video profesional para capturar los momentos más especiales de la boda.', 17500.00, 'BS', 480),
-('Música y Entretenimiento en Vivo', 'Contratación de DJ, banda o músicos en vivo para amenizar la boda.', 10500.00, 'BS', 300),
-('Asesoría de Estilo para los Novios', 'Asesoría personalizada para la elección de vestuario y accesorios de los novios.', 4900.00, 'BS', 120),
-('Transporte de Invitados', 'Servicio de transporte de lujo para los invitados desde y hacia el lugar del evento.', 8400.00, 'BS', 180),
+('Coordinación del Día de la Boda', 'Coordinación completa del día de la boda para asegurar que todo salga perfecto.', 7000.00, 'BS', 48),
+('Planificación Completa de la Boda', 'Servicio integral de planificación de la boda, desde la selección del lugar hasta la coordinación con proveedores.', 42000.00, 'BS', 24*30*3),
+('Decoración y Diseño del Evento', 'Diseño y decoración del lugar del evento de acuerdo a los gustos y preferencias de los novios.', 12600.00, 'BS', 24*21),
+('Servicio de Catering Gourmet', 'Servicio de catering con menús gourmet personalizados para los invitados.', 21000.00, 'BS', 24*7),
+('Fotografía y Video Profesional', 'Servicio de fotografía y video profesional para capturar los momentos más especiales de la boda.', 17500.00, 'BS', 12),
+('Música y Entretenimiento en Vivo', 'Contratación de DJ, banda o músicos en vivo para amenizar la boda.', 10500.00, 'BS', 1),
+('Asesoría de Estilo para los Novios', 'Asesoría personalizada para la elección de vestuario y accesorios de los novios.', 4900.00, 'BS', 24*30),
+('Transporte de Invitados', 'Servicio de transporte de lujo para los invitados desde y hacia el lugar del evento.', 8400.00, 'BS', 2),
 ('Organización de Ceremonia Civil y Religiosa', 'Organización y coordinación de la ceremonia civil y/o religiosa.', 5950.00, 'BS', 60),
-('Planificación de Luna de Miel', 'Asesoramiento y planificación de la luna de miel perfecta según los deseos de los novios.', 4900.00, 'BS', 360);
+('Planificación de Luna de Miel', 'Asesoramiento y planificación de la luna de miel perfecta según los deseos de los novios.', 18000.00, 'BS', 24*7);
 
 
 

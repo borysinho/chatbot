@@ -1,8 +1,14 @@
 import { Role } from "@prisma/client";
 import pgvector from "pgvector";
 import prisma from "../../objects/prisma.object";
-import { srvServiciosDescToString } from "./servicios.service";
-import { embeberDocumento } from "../embeddings.service";
+
+export type TChatEmbeddings = {
+  chat_id?: number;
+  cliente_id: number;
+  descripcion: string;
+  role: Role;
+  embedding: number[];
+};
 
 export const srvInsertarChat = async (
   content: string,
@@ -28,16 +34,6 @@ export const srvInsertarChat = async (
     },
   });
 
-  // const embedding = await embeberDocumento([content]);
-
-  // const count = await srvInsertarChatEmbeddings({
-  //   cliente_id: chat.cliente_id,
-  //   chat_id: chat.chat_id,
-  //   content,
-  //   embedding,
-  // });
-  // console.log({ CantidadRegistro: count });
-
   return chat;
 };
 
@@ -57,31 +53,42 @@ export const srvObtenerChatDesdeWhatsapp = async (whatsappNumber: string) => {
  * =================CHAT EMBEDDINGS=================
  */
 
-export const srvInsertarChatEmbeddings = async (chat: {
-  cliente_id: number;
+export const srvChatToEmbeddings = async (chat: {
   chat_id: number;
+  cliente_id: number;
   content: string;
+  role: Role;
   embedding: number[];
 }) => {
-  const count =
-    await prisma.$executeRaw`INSERT INTO "ChatEmbeddings" ("cliente_id", "chat_id", "descripcion", "embedding") VALUES
-        (${chat.cliente_id}, ${chat.chat_id}, ${chat.content}, ${chat.embedding}::vector)`;
-  return count;
+  const embedding = pgvector.toSql(chat.embedding);
+  try {
+    const count =
+      await prisma.$executeRaw`INSERT INTO "ChatEmbeddings" (cliente_id, chat_id, descripcion, role,  embedding) VALUES (${chat.cliente_id}, ${chat.chat_id}, ${chat.content}, ${chat.role}::"Role", ${embedding}::vector)`;
+
+    return count;
+  } catch (error) {
+    console.error(error);
+    return 0;
+  }
 };
 
-export const srvObtenerChatEmbeddings = async (
+const limit: number = parseInt(process.env.CHAT_SEARCH_LIMIT || "2");
+
+export const srvObtenerChat = async (
   cliente_id: number,
-  embedding: number[]
+  chatEmbedding: number[]
 ) => {
-  // const chatEmbeddings = await prisma.$queryRaw`SELECT * FROM "ChatEmbeddings"
-  // WHERE cliente_id = ${client_id} ORDER BY "embedding" <-> ${inputVector}::vector LIMIT 2`;
+  try {
+    const embedding = pgvector.toSql(chatEmbedding);
+    const similitudesUser: TChatEmbeddings[] =
+      await prisma.$queryRaw`SELECT cliente_id, chat_id, role, descripcion, embedding::text FROM "ChatEmbeddings" WHERE cliente_id=${cliente_id} AND  role=${Role.user}::"Role" ORDER BY embedding <-> ${embedding}::vector LIMIT ${limit}`;
 
-  const embeddings =
-    await prisma.$queryRaw`SELECT "cliente_id", "chat_id", "descripcion", embedding::text FROM "ChatEmbeddings" WHERE "cliente_id"=${cliente_id} ORDER BY "embedding" <-> ${embedding}::vector LIMIT 2`;
+    const similitudesAssistant: TChatEmbeddings[] =
+      await prisma.$queryRaw`SELECT cliente_id, chat_id, role, descripcion, embedding::text FROM "ChatEmbeddings" WHERE cliente_id=${cliente_id} AND  role=${Role.assistant}::"Role" ORDER BY embedding <-> ${embedding}::vector LIMIT ${limit}`;
 
-  return embeddings;
+    return [...similitudesUser, ...similitudesAssistant];
+  } catch (error) {
+    console.error(error);
+    return [];
+  }
 };
-
-/**
- * =================CHAT EMBEDDINGS=================
- */

@@ -1,16 +1,18 @@
 import test from "node:test";
 import prisma from "../../objects/prisma.object";
 import pgvector from "pgvector";
+import { TDocuments, srvInsertarDocumento } from "./documents.service";
 
 import {
-  srvServiciosDescToString,
-  srvServiciosPrecioToString,
+  srvServiciosDescToEmbeddings,
+  srvServiciosPrecioToEmbeddings,
 } from "./servicios.service";
 import {
   Productos,
-  ProductosEmbeddings,
-  ServiciosEmbeddings,
+  // ProductosEmbeddings,
+  // ServiciosEmbeddings,
 } from "@prisma/client";
+import { embeberDocumento } from "../embeddings.service";
 
 export type TProductosEmbeddings = {
   productoembedding_id: number;
@@ -85,33 +87,50 @@ export const srvEliminarProducto = async (producto_id: number) => {
   return productoEliminado;
 };
 
-export const srvProdDescrToString = async () => {
+export const srvProdDescrToEmbeddings = async () => {
   const productos = await srvObtenerProductos();
-  const productosArray = productos.map((producto) => {
+  const embeddings = await embeberDocumento(
+    "producto-descripcion",
+    productos.map((producto) => `${producto.nombre}. ${producto.descripcion}`)
+  );
+
+  const productosArray: TDocuments[] = productos.map((producto, i: number) => {
     return {
-      producto_id: producto.producto_id,
+      ref_id: producto.producto_id,
+      clase: "producto-descripcion",
       descripcion: `${producto.nombre}. ${producto.descripcion}`,
+      embedding: embeddings.data[i].embedding,
     };
   });
-  // console.log({ productosArray });
+
+  await srvInsertarDocumento(productosArray);
+
   return productosArray;
 };
 
-export const srvProdPrecioToString = async () => {
+export const srvProdPrecioToEmbeddings = async () => {
   const productos = await srvObtenerProductos();
-  const productosArray = productos.map((producto) => {
+  const embeddings = await embeberDocumento(
+    "producto-precio",
+    productos.map(
+      (producto) =>
+        `${producto.nombre}. Costo: ${producto.precio} ${producto.moneda}`
+    )
+  );
+
+  const productosArray: TDocuments[] = productos.map((producto, i: number) => {
     return {
-      producto_id: producto.producto_id,
+      ref_id: producto.producto_id,
+      clase: "producto-precio",
       descripcion: `${producto.nombre}. Costo: ${producto.precio} ${producto.moneda}`,
+      embedding: embeddings.data[i].embedding,
     };
   });
-  // console.log({ productosArray });
+
+  await srvInsertarDocumento(productosArray);
+
   return productosArray;
 };
-
-/**
- * =====================PRODUCTOS EMBEDDINGS=====================
- */
 
 export const srvInsertarProductoEmbedding = async (
   productos: {
@@ -119,34 +138,7 @@ export const srvInsertarProductoEmbedding = async (
     descripcion: string;
     embedding: number[];
   }[]
-) => {
-  // Obtener todos los elementos de la tabla ProductosEmbeddings que coincidan con los IDs de los productos proporcionados
-  const prodEmbeddings = await prisma.productosEmbeddings.findMany({
-    where: {
-      producto_id: {
-        in: productos.map((prod) => prod.producto_id),
-      },
-    },
-  });
-
-  let count = 0;
-
-  // Recorremos los productos proporcionados para insertarlos
-  for (const producto of productos) {
-    const prodEmbedding = prodEmbeddings.filter(
-      (prod) => prod.producto_id === producto.producto_id
-    );
-
-    // Si no existe el producto en la tabla ProductosEmbeddings, lo insertamos
-    if (prodEmbedding.length < 2) {
-      const embedding = pgvector.toSql(producto.embedding);
-      count +=
-        await prisma.$executeRaw`INSERT INTO "ProductosEmbeddings" (producto_id, descripcion, embedding) VALUES (${producto.producto_id}, ${producto.descripcion}, ${embedding}::vector)`;
-    }
-  }
-
-  return count;
-};
+) => {};
 
 export const srvObtenerProductoEmbedding = async (vector: number[]) => {
   const embedding = pgvector.toSql(vector);
@@ -155,7 +147,3 @@ export const srvObtenerProductoEmbedding = async (vector: number[]) => {
 
   return similitudes;
 };
-
-/**
- * =====================PRODUCTOS EMBEDDINGS=====================
- */

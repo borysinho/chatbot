@@ -1,7 +1,5 @@
-import { APIError } from "groq-sdk";
-import { groq } from "../objects/completions.object";
+import { groq, openaiComplettions } from "../objects/completions.object";
 import { HttpException } from "../utils";
-import {} from "../objects/completions.object";
 
 export const srvIASend = async (
   name: string,
@@ -45,37 +43,26 @@ export const srvIASend = async (
   return completion;
 };
 
-// const systemMessage = [
-//   {
-//     role: "system",
-//     content: `Eres una IA que pricipalmente vende servicios y productos de Weeding Planner, pero también vende servicios y productos individuales.
-//     No debes especificar las cantidades de los productos o servicios existentes, en su lugar, consulta al usuario de manera educada cuántos desea.
-//     En caso de que consulten por un producto o servicio que no exista, debes responder que no se encuentra disponible y ofrecer productos o servicios similares.`,
-//   },
-// ];
-
-type CompletionMessageType = {
-  role: string;
-  content: string;
-};
-
 export async function completarChat(
   whatsappNumber: string,
   nombreUsuario: string,
   systemTemplate: CompletionMessageType[],
-  historialChat: CompletionMessageType[]
+  historialChat: CompletionMessageType[],
+  lastUserMessage: string
 ) {
-  // const messages: CompletionMessageType[] = [];
-
-  // console.log({ messages });
-  const messages = systemTemplate.concat(historialChat);
+  const messages = systemTemplate
+    .concat(historialChat)
+    .concat({ role: "user", content: lastUserMessage });
 
   const chatCompletion = await groq.chat.completions.create({
     messages,
     model: "mixtral-8x7b-32768",
     temperature: 0,
+<<<<<<< HEAD
     max_tokens: 300,
     top_p: 0,
+=======
+>>>>>>> one-document
     stream: false,
     stop: null,
     user: nombreUsuario,
@@ -87,3 +74,44 @@ export async function completarChat(
 /**
  * ===================OPENAI CHAT===================
  */
+
+export type CompletionMessageType = {
+  role: string;
+  content: string;
+};
+
+export const systemContext = (contentArray: string[]) => {
+  return `Eres una IA especialista en venta de servicios, productos y paquetes de weeding planner.
+1. No te salgas de contexto. Si el usuario pregunta por cosas que no se encuentran en el catálogo, deberás contestar lo más gentilmente posible que solo vendes productos y servicios para planes de bodas.
+2. Las respuestas que generas no deben exceder los 250 caracteres.
+3. No proveas precios a menos que te lo pidan.
+A continuación envío el contexto para que elabores las respuestas:
+${contentArray.map((cadena: string) => cadena).join("\n")}`;
+};
+
+export const openAICompletion = async (
+  chat: CompletionMessageType[],
+  context: string[],
+  lastUserMessage: string
+) => {
+  //Agegamos el contexto
+  const contexto: CompletionMessageType = {
+    role: "system",
+    content: systemContext(context),
+  };
+  const messages = [contexto].concat(chat);
+  console.log({ messages });
+
+  const completion = await openaiComplettions.chat.completions.create({
+    messages: [
+      { role: "system", content: systemContext(context) },
+      { role: "user", content: lastUserMessage },
+    ],
+    model: "gpt-3.5-turbo",
+    temperature: 0,
+  });
+
+  console.log({ completion });
+
+  return completion;
+};

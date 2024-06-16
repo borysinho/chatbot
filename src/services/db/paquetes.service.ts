@@ -1,7 +1,9 @@
 import pgvector from "pgvector";
 import prisma from "../../objects/prisma.object";
-import { PaquetesEmbeddings } from "@prisma/client";
+// import { PaquetesEmbeddings } from "@prisma/client";
 import client from "../../objects/prisma.object";
+import { TDocuments, srvInsertarDocumento } from "./documents.service";
+import { embeberDocumento } from "../embeddings.service";
 
 export type TPaquetesEmbeddings = {
   paqueteembedding_id: number;
@@ -103,82 +105,57 @@ export const srvObtenerFullPaquete = async () => {
   return paquetes;
 };
 
-export const srvPaqueteDescripcionToArrayString = async () => {
+export const srvPaqueteDescripcionToEmbeddings = async () => {
   const paquetes = await srvObtenerFullPaquete();
-  const paquetesDesc = paquetes.map((paquete) => {
+  const paquetesStringArray = paquetes.map((paquete) => {
     const elementos = paquete.elementospaquetes.map((elemento) => {
-      if (elemento.tipo_elemento === "Producto") {
-        return `${elemento.cantidad}x ${elemento.productos?.nombre}`;
-      } else {
-        return `${elemento.cantidad}x ${elemento.servicios?.nombre}`;
-      }
+      return elemento.tipo_elemento === "Producto"
+        ? `${elemento.cantidad}x ${elemento.productos?.nombre}`
+        : `${elemento.cantidad}x ${elemento.servicios?.nombre}`;
     });
 
+    return `${paquete.nombre}. Consta de ${elementos.join(", ")}.`;
+  });
+
+  const embeddings = await embeberDocumento(
+    "paquete-descripcion",
+    paquetesStringArray
+  );
+
+  const paquetesDesc: TDocuments[] = paquetes.map((paquete, i: number) => {
     return {
-      paquete_id: paquete.paquete_id,
-      descripcion: `${paquete.nombre}. Consta de ${elementos.join(", ")}.`,
+      ref_id: paquete.paquete_id,
+      clase: "paquete-descripcion",
+      descripcion: paquetesStringArray[i],
+      embedding: embeddings.data[i].embedding,
     };
   });
 
-  // console.log({ paquetesDesc });
+  await srvInsertarDocumento(paquetesDesc);
+
   return paquetesDesc;
 };
 
-export const srvPaquetePrecioToArraString = async () => {
+export const srvPaquetePrecioToEmbeddings = async () => {
   const paquetes = await srvObtenerFullPaquete();
-  const paquetesPrecio = paquetes.map((paquete) => {
-    // const texto = `${paquete.nombre}. Precio: ${paquete.precio} ${paquete.moneda}`;
+  const embeddings = await embeberDocumento(
+    "paquete-precio",
+    paquetes.map(
+      (paquete) =>
+        `${paquete.nombre}. Precio: ${paquete.precio} ${paquete.moneda}`
+    )
+  );
+
+  const paquetesPrecio: TDocuments[] = paquetes.map((paquete, i: number) => {
     return {
-      paquete_id: paquete.paquete_id,
+      ref_id: paquete.paquete_id,
+      clase: "paquete-precio",
       descripcion: `${paquete.nombre}. Precio: ${paquete.precio} ${paquete.moneda}`,
+      embedding: embeddings.data[i].embedding,
     };
   });
 
+  await srvInsertarDocumento(paquetesPrecio);
+
   return paquetesPrecio;
 };
-
-/**
- * =================PAQUETES EMBEDDINGS=================
- */
-
-export const srvInsertarPaqueteEmbedding = async (
-  paquetes: {
-    paquete_id: number;
-    descripcion: string;
-    embedding: number[];
-  }[]
-) => {
-  const paqEmbeddings = await prisma.paquetesEmbeddings.findMany({
-    where: {
-      paquete_id: {
-        in: paquetes.map((paq) => paq.paquete_id),
-      },
-    },
-  });
-
-  let count = 0;
-  for (const paquete of paquetes) {
-    const paqEmbedding = paqEmbeddings.filter(
-      (paq) => paq.paquete_id === paquete.paquete_id
-    );
-
-    if (paqEmbedding.length < 2) {
-      const embedding = pgvector.toSql(paquete.embedding);
-      count +=
-        await prisma.$executeRaw`INSERT INTO "PaquetesEmbeddings" ( paquete_id, descripcion, embedding) VALUES
-        (${paquete.paquete_id}, ${paquete.descripcion}, ${embedding}::vector)`;
-    }
-  }
-  return count;
-};
-
-export const srvObtenerPaquetesEmbeddings = async (vector: number[]) => {
-  const embedding = pgvector.toSql(vector);
-  const similitudes: TPaquetesEmbeddings[] =
-    await prisma.$queryRaw`SELECT paqueteembedding_id, paquete_id, descripcion, embedding::text FROM "PaquetesEmbeddings" ORDER BY embedding <-> ${embedding}::vector LIMIT 2`;
-
-  return similitudes;
-};
-/**
- * =================PAQUETES EMBEDDINGS=================
- */
