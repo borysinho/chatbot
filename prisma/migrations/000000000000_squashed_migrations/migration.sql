@@ -5,7 +5,28 @@ CREATE EXTENSION IF NOT EXISTS "vector";
 CREATE TYPE "Role" AS ENUM ('user', 'system', 'assistant');
 
 -- CreateEnum
-CREATE TYPE "Moneda" AS ENUM ('USD', 'Bs');
+CREATE TYPE "PendienteAprobadaRechazada_enum" AS ENUM ('Pendiente', 'Aprobada', 'Rechazada');
+
+-- CreateEnum
+CREATE TYPE "PendienteConfirmadaCancelada_enum" AS ENUM ('Pendiente', 'Confirmada', 'Cancelada');
+
+-- CreateEnum
+CREATE TYPE "PendienteEnProcesoCompletadaCancelada_enum" AS ENUM ('Pendiente', 'En Proceso', 'Completada', 'Cancelada');
+
+-- CreateEnum
+CREATE TYPE "ProductoServicio_enum" AS ENUM ('Producto', 'Servicio');
+
+-- CreateEnum
+CREATE TYPE "ProductoServicioPaquete_enum" AS ENUM ('Producto', 'Servicio', 'Paquete');
+
+-- CreateTable
+CREATE TABLE "ProductosEmbeddings" (
+    "producto_id" INTEGER NOT NULL,
+    "descripcion" TEXT NOT NULL,
+    "embedding" vector(500),
+
+    CONSTRAINT "ProductosEmbeddings_pkey" PRIMARY KEY ("producto_id")
+);
 
 -- CreateTable
 CREATE TABLE "Chat" (
@@ -13,259 +34,252 @@ CREATE TABLE "Chat" (
     "content" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "role" "Role" NOT NULL,
-    "idCliente" INTEGER NOT NULL,
+    "cliente_id" INTEGER NOT NULL,
 
     CONSTRAINT "Chat_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "Cliente" (
-    "id" SERIAL NOT NULL,
-    "nombre" TEXT,
-    "apellido" TEXT,
-    "telefono" TEXT,
-    "email" TEXT,
+CREATE TABLE "Clientes" (
+    "cliente_id" SERIAL NOT NULL,
+    "nombre" VARCHAR(255),
+    "email" VARCHAR(255),
+    "telefono" VARCHAR(20),
     "direccion" TEXT,
+    "fecha_registro" TIMESTAMP(6) DEFAULT CURRENT_TIMESTAMP,
     "whatsappNumber" TEXT NOT NULL,
     "profileName" TEXT NOT NULL,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
 
-    CONSTRAINT "Cliente_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "Clientes_pkey" PRIMARY KEY ("cliente_id")
 );
 
 -- CreateTable
-CREATE TABLE "Cotizacion" (
-    "id" SERIAL NOT NULL,
-    "montoTotal" DOUBLE PRECISION NOT NULL,
-    "fechaEntrega" TIMESTAMP(3) NOT NULL,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "idCliente" INTEGER NOT NULL,
+CREATE TABLE "Cotizaciones" (
+    "cotizacion_id" SERIAL NOT NULL,
+    "cliente_id" INTEGER,
+    "fecha_cotizacion" TIMESTAMP(6) DEFAULT CURRENT_TIMESTAMP,
+    "total" DECIMAL(10,2) NOT NULL,
+    "estatus" "PendienteAprobadaRechazada_enum" DEFAULT 'Pendiente',
 
-    CONSTRAINT "Cotizacion_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "Cotizaciones_pkey" PRIMARY KEY ("cotizacion_id")
 );
 
 -- CreateTable
-CREATE TABLE "Contrato" (
-    "id" SERIAL NOT NULL,
-    "montoTotal" DOUBLE PRECISION NOT NULL,
-    "descuento" DOUBLE PRECISION,
-    "fechaEntrega" TIMESTAMP(3) NOT NULL,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "idCliente" INTEGER NOT NULL,
+CREATE TABLE "DetallesCotizaciones" (
+    "detalle_cotizacion_id" SERIAL NOT NULL,
+    "cotizacion_id" INTEGER NOT NULL,
+    "tipo_item" "ProductoServicioPaquete_enum" NOT NULL,
+    "cantidad" INTEGER NOT NULL,
+    "precio_unitario" DECIMAL(10,2) NOT NULL,
+    "subtotal" DECIMAL(10,2) NOT NULL,
+    "paquete_id" INTEGER,
+    "producto_id" INTEGER,
+    "servicio_id" INTEGER,
 
-    CONSTRAINT "Contrato_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "DetallesCotizaciones_pkey" PRIMARY KEY ("detalle_cotizacion_id")
 );
 
 -- CreateTable
-CREATE TABLE "UnidadDeMedida" (
-    "id" SERIAL NOT NULL,
-    "nombre" TEXT NOT NULL,
-    "nombrePlural" TEXT NOT NULL,
-    "abreviatura" TEXT NOT NULL,
-    "descripcion" TEXT NOT NULL,
+CREATE TABLE "DetallesProduccionDemandada" (
+    "detalle_produccion_id" SERIAL NOT NULL,
+    "produccion_id" INTEGER,
+    "producto_id" INTEGER,
+    "cantidad" INTEGER NOT NULL,
 
-    CONSTRAINT "UnidadDeMedida_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "DetallesProduccionDemandada_pkey" PRIMARY KEY ("detalle_produccion_id")
+);
+
+-- CreateTable
+CREATE TABLE "DetallesVentas" (
+    "detalle_venta_id" SERIAL NOT NULL,
+    "venta_id" INTEGER NOT NULL,
+    "tipo_item" "ProductoServicioPaquete_enum" NOT NULL,
+    "cantidad" INTEGER NOT NULL,
+    "precio_unitario" DECIMAL(10,2) NOT NULL,
+    "subtotal" DECIMAL(10,2) NOT NULL,
+    "paquete_id" INTEGER,
+    "producto_id" INTEGER,
+    "servicio_id" INTEGER,
+
+    CONSTRAINT "DetallesVentas_pkey" PRIMARY KEY ("detalle_venta_id")
+);
+
+-- CreateTable
+CREATE TABLE "DisponibilidadGeneral" (
+    "disponibilidad_id" SERIAL NOT NULL,
+    "tipo_item" "ProductoServicio_enum" NOT NULL,
+    "fecha" DATE NOT NULL,
+    "cantidad_disponible" INTEGER NOT NULL,
+    "producto_id" INTEGER,
+    "servicio_id" INTEGER,
+
+    CONSTRAINT "DisponibilidadGeneral_pkey" PRIMARY KEY ("disponibilidad_id")
+);
+
+-- CreateTable
+CREATE TABLE "ElementosPaquetes" (
+    "elemento_paquete_id" SERIAL NOT NULL,
+    "paquete_id" INTEGER NOT NULL,
+    "tipo_elemento" "ProductoServicio_enum" NOT NULL,
+    "cantidad" INTEGER NOT NULL,
+    "producto_id" INTEGER,
+    "servicio_id" INTEGER,
+
+    CONSTRAINT "ElementosPaquetes_pkey" PRIMARY KEY ("elemento_paquete_id")
+);
+
+-- CreateTable
+CREATE TABLE "Paquetes" (
+    "paquete_id" SERIAL NOT NULL,
+    "nombre" VARCHAR(255) NOT NULL,
+    "descripcion" TEXT,
+    "precio" DECIMAL(10,2) NOT NULL,
+    "moneda" VARCHAR(3) DEFAULT 'BS',
+    "fecha_creacion" TIMESTAMP(6) DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "Paquetes_pkey" PRIMARY KEY ("paquete_id")
+);
+
+-- CreateTable
+CREATE TABLE "ProduccionDemandada" (
+    "produccion_id" SERIAL NOT NULL,
+    "venta_id" INTEGER,
+    "fecha_solicitud" TIMESTAMP(6) DEFAULT CURRENT_TIMESTAMP,
+    "fecha_entrega" DATE,
+    "estatus" "PendienteEnProcesoCompletadaCancelada_enum" DEFAULT 'Pendiente',
+
+    CONSTRAINT "ProduccionDemandada_pkey" PRIMARY KEY ("produccion_id")
 );
 
 -- CreateTable
 CREATE TABLE "Productos" (
-    "id" SERIAL NOT NULL,
-    "nombre" TEXT NOT NULL,
-    "descripcion" TEXT NOT NULL,
-    "precioProducto" DOUBLE PRECISION NOT NULL,
-    "precioServicio" DOUBLE PRECISION NOT NULL,
+    "producto_id" SERIAL NOT NULL,
+    "nombre" VARCHAR(255) NOT NULL,
+    "descripcion" TEXT,
+    "precio" DECIMAL(10,2) NOT NULL,
+    "moneda" VARCHAR(3) DEFAULT 'BS',
     "stock" INTEGER NOT NULL,
-    "moneda" "Moneda" NOT NULL DEFAULT 'Bs',
-    "tiempoServicioHoras" DOUBLE PRECISION NOT NULL,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
-    "idUnidadDeMedida" INTEGER NOT NULL,
-    "seVende" BOOLEAN NOT NULL,
-    "esServicio" BOOLEAN NOT NULL,
-    "esProducto" BOOLEAN NOT NULL,
+    "fecha_creacion" TIMESTAMP(6) DEFAULT CURRENT_TIMESTAMP,
 
-    CONSTRAINT "Productos_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "Productos_pkey" PRIMARY KEY ("producto_id")
 );
 
 -- CreateTable
-CREATE TABLE "ProductosEmbeddings" (
-    "idProducto" INTEGER NOT NULL,
-    "NombreProducto" TEXT NOT NULL,
-    "Descripcion" TEXT NOT NULL,
-    "Embedding" vector(3) NOT NULL,
-
-    CONSTRAINT "ProductosEmbeddings_pkey" PRIMARY KEY ("idProducto")
-);
-
--- CreateTable
-CREATE TABLE "StockPorFecha" (
-    "fecha" TIMESTAMP(3) NOT NULL,
-    "idProducto" INTEGER NOT NULL,
-    "stock" INTEGER NOT NULL,
-
-    CONSTRAINT "StockPorFecha_pkey" PRIMARY KEY ("idProducto","fecha")
-);
-
--- CreateTable
-CREATE TABLE "Categoria" (
-    "id" SERIAL NOT NULL,
-    "nombre" TEXT NOT NULL,
-    "descripcion" TEXT NOT NULL,
-
-    CONSTRAINT "Categoria_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "DetalleDeCategoriaDeProductos" (
-    "idCategoria" INTEGER NOT NULL,
-    "idProducto" INTEGER NOT NULL,
-
-    CONSTRAINT "DetalleDeCategoriaDeProductos_pkey" PRIMARY KEY ("idCategoria","idProducto")
-);
-
--- CreateTable
-CREATE TABLE "ImagenProducto" (
-    "idProducto" INTEGER NOT NULL,
-    "urlImagen" TEXT NOT NULL,
-
-    CONSTRAINT "ImagenProducto_pkey" PRIMARY KEY ("idProducto")
-);
-
--- CreateTable
-CREATE TABLE "Caracteristicas" (
-    "id" SERIAL NOT NULL,
-    "nombre" TEXT NOT NULL,
-    "valor" TEXT NOT NULL,
-    "idProducto" INTEGER NOT NULL,
-
-    CONSTRAINT "Caracteristicas_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "JuegoDeProductos" (
-    "id" SERIAL NOT NULL,
-    "nombre" TEXT NOT NULL,
-    "descripcion" TEXT NOT NULL,
-    "precioJuego" DOUBLE PRECISION NOT NULL,
-
-    CONSTRAINT "JuegoDeProductos_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "DetalleJuegoDeProductos" (
-    "idJuegoDeProductos" INTEGER NOT NULL,
-    "idProducto" INTEGER NOT NULL,
-
-    CONSTRAINT "DetalleJuegoDeProductos_pkey" PRIMARY KEY ("idJuegoDeProductos","idProducto")
-);
-
--- CreateTable
-CREATE TABLE "DetalleProductosIndividualesCotizados" (
-    "idProducto" INTEGER NOT NULL,
-    "idCotizacion" INTEGER NOT NULL,
+CREATE TABLE "ReservasServicios" (
+    "reserva_id" SERIAL NOT NULL,
+    "venta_id" INTEGER,
+    "cliente_id" INTEGER,
+    "servicio_id" INTEGER,
+    "fecha" DATE,
+    "hora" TIME(6),
     "cantidad" INTEGER NOT NULL,
-    "precio" INTEGER NOT NULL,
+    "estatus" "PendienteConfirmadaCancelada_enum" DEFAULT 'Pendiente',
 
-    CONSTRAINT "DetalleProductosIndividualesCotizados_pkey" PRIMARY KEY ("idProducto","idCotizacion")
+    CONSTRAINT "ReservasServicios_pkey" PRIMARY KEY ("reserva_id")
 );
 
 -- CreateTable
-CREATE TABLE "DetalleJuegoDeProductosCotizados" (
-    "idProducto" INTEGER NOT NULL,
-    "idJuegoDeProductos" INTEGER NOT NULL,
-    "idCotizacion" INTEGER NOT NULL,
-    "cantidad" INTEGER NOT NULL,
-    "precio" INTEGER NOT NULL,
-    "juegoCompleto" BOOLEAN NOT NULL,
+CREATE TABLE "Servicios" (
+    "servicio_id" SERIAL NOT NULL,
+    "nombre" VARCHAR(255) NOT NULL,
+    "descripcion" TEXT,
+    "tarifa" DECIMAL(10,2) NOT NULL,
+    "moneda" VARCHAR(3) DEFAULT 'BS',
+    "duracion_en_horas" INTEGER NOT NULL,
+    "fecha_creacion" TIMESTAMP(6) DEFAULT CURRENT_TIMESTAMP,
 
-    CONSTRAINT "DetalleJuegoDeProductosCotizados_pkey" PRIMARY KEY ("idProducto","idJuegoDeProductos","idCotizacion")
+    CONSTRAINT "Servicios_pkey" PRIMARY KEY ("servicio_id")
 );
 
 -- CreateTable
-CREATE TABLE "DetalleProductosIndividualesContratados" (
-    "idProducto" INTEGER NOT NULL,
-    "idContrato" INTEGER NOT NULL,
-    "cantidad" INTEGER NOT NULL,
-    "precio" INTEGER NOT NULL,
+CREATE TABLE "Ventas" (
+    "venta_id" SERIAL NOT NULL,
+    "cliente_id" INTEGER,
+    "fecha_venta" TIMESTAMP(6) DEFAULT CURRENT_TIMESTAMP,
+    "total" DECIMAL(10,2) NOT NULL,
+    "cotizacion_id" INTEGER,
 
-    CONSTRAINT "DetalleProductosIndividualesContratados_pkey" PRIMARY KEY ("idProducto","idContrato")
-);
-
--- CreateTable
-CREATE TABLE "DetalleJuegoDeProductosContratados" (
-    "idProducto" INTEGER NOT NULL,
-    "idJuegoDeProductos" INTEGER NOT NULL,
-    "idContrato" INTEGER NOT NULL,
-    "cantidad" INTEGER NOT NULL,
-    "precio" INTEGER NOT NULL,
-
-    CONSTRAINT "DetalleJuegoDeProductosContratados_pkey" PRIMARY KEY ("idProducto","idJuegoDeProductos","idContrato")
+    CONSTRAINT "Ventas_pkey" PRIMARY KEY ("venta_id")
 );
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Cliente_whatsappNumber_key" ON "Cliente"("whatsappNumber");
+CREATE UNIQUE INDEX "Clientes_email_key" ON "Clientes"("email");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Productos_nombre_key" ON "Productos"("nombre");
+CREATE UNIQUE INDEX "Clientes_whatsappNumber_key" ON "Clientes"("whatsappNumber");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "DisponibilidadGeneral_tipo_item_producto_id_servicio_id_fec_key" ON "DisponibilidadGeneral"("tipo_item", "producto_id", "servicio_id", "fecha");
 
 -- AddForeignKey
-ALTER TABLE "Chat" ADD CONSTRAINT "Chat_idCliente_fkey" FOREIGN KEY ("idCliente") REFERENCES "Cliente"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "ProductosEmbeddings" ADD CONSTRAINT "ProductosEmbeddings_producto_id_fkey" FOREIGN KEY ("producto_id") REFERENCES "Productos"("producto_id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Cotizacion" ADD CONSTRAINT "Cotizacion_idCliente_fkey" FOREIGN KEY ("idCliente") REFERENCES "Cliente"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Chat" ADD CONSTRAINT "Chat_cliente_id_fkey" FOREIGN KEY ("cliente_id") REFERENCES "Clientes"("cliente_id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Contrato" ADD CONSTRAINT "Contrato_idCliente_fkey" FOREIGN KEY ("idCliente") REFERENCES "Cliente"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Cotizaciones" ADD CONSTRAINT "Cotizaciones_cliente_id_fkey" FOREIGN KEY ("cliente_id") REFERENCES "Clientes"("cliente_id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "Productos" ADD CONSTRAINT "Productos_idUnidadDeMedida_fkey" FOREIGN KEY ("idUnidadDeMedida") REFERENCES "UnidadDeMedida"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "DetallesCotizaciones" ADD CONSTRAINT "DetallesCotizaciones_cotizacion_id_fkey" FOREIGN KEY ("cotizacion_id") REFERENCES "Cotizaciones"("cotizacion_id") ON DELETE CASCADE ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "ProductosEmbeddings" ADD CONSTRAINT "ProductosEmbeddings_idProducto_fkey" FOREIGN KEY ("idProducto") REFERENCES "Productos"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "DetallesCotizaciones" ADD CONSTRAINT "DetallesCotizaciones_paquete_id_fkey" FOREIGN KEY ("paquete_id") REFERENCES "Paquetes"("paquete_id") ON DELETE CASCADE ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "StockPorFecha" ADD CONSTRAINT "StockPorFecha_idProducto_fkey" FOREIGN KEY ("idProducto") REFERENCES "Productos"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "DetallesCotizaciones" ADD CONSTRAINT "DetallesCotizaciones_producto_id_fkey" FOREIGN KEY ("producto_id") REFERENCES "Productos"("producto_id") ON DELETE CASCADE ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "DetalleDeCategoriaDeProductos" ADD CONSTRAINT "DetalleDeCategoriaDeProductos_idCategoria_fkey" FOREIGN KEY ("idCategoria") REFERENCES "Categoria"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "DetallesCotizaciones" ADD CONSTRAINT "DetallesCotizaciones_servicio_id_fkey" FOREIGN KEY ("servicio_id") REFERENCES "Servicios"("servicio_id") ON DELETE CASCADE ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "DetalleDeCategoriaDeProductos" ADD CONSTRAINT "DetalleDeCategoriaDeProductos_idProducto_fkey" FOREIGN KEY ("idProducto") REFERENCES "Productos"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "DetallesProduccionDemandada" ADD CONSTRAINT "DetallesProduccionDemandada_produccion_id_fkey" FOREIGN KEY ("produccion_id") REFERENCES "ProduccionDemandada"("produccion_id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "ImagenProducto" ADD CONSTRAINT "ImagenProducto_idProducto_fkey" FOREIGN KEY ("idProducto") REFERENCES "Productos"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "DetallesProduccionDemandada" ADD CONSTRAINT "DetallesProduccionDemandada_producto_id_fkey" FOREIGN KEY ("producto_id") REFERENCES "Productos"("producto_id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "Caracteristicas" ADD CONSTRAINT "Caracteristicas_idProducto_fkey" FOREIGN KEY ("idProducto") REFERENCES "Productos"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "DetallesVentas" ADD CONSTRAINT "DetallesVentas_venta_id_fkey" FOREIGN KEY ("venta_id") REFERENCES "Ventas"("venta_id") ON DELETE CASCADE ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "DetalleJuegoDeProductos" ADD CONSTRAINT "DetalleJuegoDeProductos_idJuegoDeProductos_fkey" FOREIGN KEY ("idJuegoDeProductos") REFERENCES "JuegoDeProductos"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "DetallesVentas" ADD CONSTRAINT "DetallesVentas_paquete_id_fkey" FOREIGN KEY ("paquete_id") REFERENCES "Paquetes"("paquete_id") ON DELETE CASCADE ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "DetalleJuegoDeProductos" ADD CONSTRAINT "DetalleJuegoDeProductos_idProducto_fkey" FOREIGN KEY ("idProducto") REFERENCES "Productos"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "DetallesVentas" ADD CONSTRAINT "DetallesVentas_producto_id_fkey" FOREIGN KEY ("producto_id") REFERENCES "Productos"("producto_id") ON DELETE CASCADE ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "DetalleProductosIndividualesCotizados" ADD CONSTRAINT "DetalleProductosIndividualesCotizados_idProducto_fkey" FOREIGN KEY ("idProducto") REFERENCES "Productos"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "DetallesVentas" ADD CONSTRAINT "DetallesVentas_servicio_id_fkey" FOREIGN KEY ("servicio_id") REFERENCES "Servicios"("servicio_id") ON DELETE CASCADE ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "DetalleProductosIndividualesCotizados" ADD CONSTRAINT "DetalleProductosIndividualesCotizados_idCotizacion_fkey" FOREIGN KEY ("idCotizacion") REFERENCES "Cotizacion"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "DisponibilidadGeneral" ADD CONSTRAINT "DisponibilidadGeneral_producto_id_fkey" FOREIGN KEY ("producto_id") REFERENCES "Productos"("producto_id") ON DELETE CASCADE ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "DetalleJuegoDeProductosCotizados" ADD CONSTRAINT "DetalleJuegoDeProductosCotizados_idProducto_idJuegoDeProdu_fkey" FOREIGN KEY ("idProducto", "idJuegoDeProductos") REFERENCES "DetalleJuegoDeProductos"("idProducto", "idJuegoDeProductos") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "DisponibilidadGeneral" ADD CONSTRAINT "DisponibilidadGeneral_servicio_id_fkey" FOREIGN KEY ("servicio_id") REFERENCES "Servicios"("servicio_id") ON DELETE CASCADE ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "DetalleJuegoDeProductosCotizados" ADD CONSTRAINT "DetalleJuegoDeProductosCotizados_idCotizacion_fkey" FOREIGN KEY ("idCotizacion") REFERENCES "Cotizacion"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "ElementosPaquetes" ADD CONSTRAINT "ElementosPaquetes_paquete_id_fkey" FOREIGN KEY ("paquete_id") REFERENCES "Paquetes"("paquete_id") ON DELETE CASCADE ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "DetalleProductosIndividualesContratados" ADD CONSTRAINT "DetalleProductosIndividualesContratados_idProducto_fkey" FOREIGN KEY ("idProducto") REFERENCES "Productos"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "ElementosPaquetes" ADD CONSTRAINT "ElementosPaquetes_producto_id_fkey" FOREIGN KEY ("producto_id") REFERENCES "Productos"("producto_id") ON DELETE CASCADE ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "DetalleProductosIndividualesContratados" ADD CONSTRAINT "DetalleProductosIndividualesContratados_idContrato_fkey" FOREIGN KEY ("idContrato") REFERENCES "Contrato"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "ElementosPaquetes" ADD CONSTRAINT "ElementosPaquetes_servicio_id_fkey" FOREIGN KEY ("servicio_id") REFERENCES "Servicios"("servicio_id") ON DELETE CASCADE ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "DetalleJuegoDeProductosContratados" ADD CONSTRAINT "DetalleJuegoDeProductosContratados_idProducto_idJuegoDePro_fkey" FOREIGN KEY ("idProducto", "idJuegoDeProductos") REFERENCES "DetalleJuegoDeProductos"("idProducto", "idJuegoDeProductos") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "ProduccionDemandada" ADD CONSTRAINT "ProduccionDemandada_venta_id_fkey" FOREIGN KEY ("venta_id") REFERENCES "Ventas"("venta_id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "DetalleJuegoDeProductosContratados" ADD CONSTRAINT "DetalleJuegoDeProductosContratados_idContrato_fkey" FOREIGN KEY ("idContrato") REFERENCES "Contrato"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "ReservasServicios" ADD CONSTRAINT "ReservasServicios_cliente_id_fkey" FOREIGN KEY ("cliente_id") REFERENCES "Clientes"("cliente_id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+-- AddForeignKey
+ALTER TABLE "ReservasServicios" ADD CONSTRAINT "ReservasServicios_servicio_id_fkey" FOREIGN KEY ("servicio_id") REFERENCES "Servicios"("servicio_id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+-- AddForeignKey
+ALTER TABLE "ReservasServicios" ADD CONSTRAINT "ReservasServicios_venta_id_fkey" FOREIGN KEY ("venta_id") REFERENCES "Ventas"("venta_id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+-- AddForeignKey
+ALTER TABLE "Ventas" ADD CONSTRAINT "Ventas_cliente_id_fkey" FOREIGN KEY ("cliente_id") REFERENCES "Clientes"("cliente_id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+-- AddForeignKey
+ALTER TABLE "Ventas" ADD CONSTRAINT "Ventas_cotizacion_id_fkey" FOREIGN KEY ("cotizacion_id") REFERENCES "Cotizaciones"("cotizacion_id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 

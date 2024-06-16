@@ -1,32 +1,70 @@
-import prisma from "../objects/prisma.object";
-import embeddingsEndPoint from "../objects/embeddings.object";
-import { getFormatedDate } from "../utils";
 import pgvector from "pgvector";
-import { Prisma, ProductosEmbeddings } from "@prisma/client";
+import prisma from "../objects/prisma.object";
+import {
+  writeFileSync,
+  readFileSync,
+  access,
+  mkdirSync,
+  readSync,
+  accessSync,
+  readdirSync,
+} from "fs";
+import { openaiEmbeddings } from "../objects/embeddings.object";
+import {
+  srvInsertarPaqueteEmbedding,
+  srvObtenerPaquetesEmbeddings,
+  srvPaqueteDescripcionToArrayString,
+  srvPaquetePrecioToArraString,
+} from "./db/paquetes.service";
+import {
+  srvInsertarProductoEmbedding,
+  srvObtenerProductoEmbedding,
+  srvProdDescrToString,
+  srvProdPrecioToString,
+} from "./db/productos.service";
+import {
+  srvInsertarServicioEmbedding,
+  srvObtenerServiciosEmbeddings,
+  srvServiciosDescToString,
+  srvServiciosPrecioToString,
+} from "./db/servicios.service";
+import { srvInsertarChat } from "./db/chat.service";
+import {
+  Clientes,
+  ProductosEmbeddings,
+  Role,
+  ServiciosEmbeddings,
+} from "@prisma/client";
 
-export async function obtenerEmbedding(input: string) {
-  const endPoint = await embeddingsEndPoint.embeddings.create({
+export const embeberDocumento = async (
+  nombreDocumento: string,
+  input: string[]
+) => {
+  console.log(
+    `Embebiendo documento "${nombreDocumento}" de ${input.length} párrafos...`
+  );
+  const vectors = await openaiEmbeddings.embeddings.create({
     model: "text-embedding-3-small",
     input,
     encoding_format: "float",
-    dimensions: 3,
+    dimensions: 500,
   });
 
-  // const embedding = endPoint.data[0].embedding;
+  return vectors;
+};
 
-  // console.log({ endPoint, embedding });
-  return endPoint;
-}
+const ObjectToFile = (obj: Object, folder: string, filename: string) =>
+  writeFileSync(
+    `${folder}${filename}.JSON`,
+    JSON.stringify(obj, null, 2),
+    "utf8"
+  );
 
-export const generarEmbeddingsProductos = async () => {
-  const productos = await prisma.productos.findMany({
-    include: {
-      unidadDeMedida: true,
-      Caracteristicas: true,
-      StockPorFecha: true,
-    },
-  });
+const FileToObject = async (folder: string, filename: string) => {
+  return await JSON.parse(readFileSync(`${folder}${filename}.JSON`, "utf8"));
+};
 
+<<<<<<< HEAD
   for (const producto of productos) {
     let detalle = "";
     // if (producto.esServicio) {
@@ -71,32 +109,163 @@ export const generarEmbeddingsProductos = async () => {
         (${producto.id}, ${producto.nombre}, ${detalle}, ${embedding}::vector)`;
     }
     // }
+=======
+const existenArchivos = (folder: string) => {
+  try {
+    const fileList = readdirSync(folder);
+    return fileList.length > 0;
+  } catch (error) {
+    return false;
+>>>>>>> system-messages
   }
 };
 
-export const obtenerSimilitudesSemanticas = async (embedding: number[]) => {
-  // const similitudes = await prisma.$queryRaw`
-  // SELECT "idProducto", "NombreProducto", "Descripcion", "Embedding" FROM "ProductosEmbeddings"
-  // ORDER BY "Embedding" <-> ${embedding}::float[] LIMIT 2`;
+const exportarData = async (data: any, folder: string, filename: string) => {
+  try {
+    access(folder, (err) => {
+      if (err) {
+        mkdirSync(folder);
+      }
+    });
+    ObjectToFile(data, folder, filename);
+  } catch (error) {
+    console.error(error);
+  }
+};
 
-  const embeddingSQL = pgvector.toSql(embedding);
-  // console.log({ embeddingSQL });
+const folder = "./src/data/vectors/";
 
-  const similitudes: ProductosEmbeddings[] = await prisma.$queryRaw`
-  SELECT "idProducto", "NombreProducto", "Descripcion", "Embedding"::text FROM "ProductosEmbeddings" ORDER BY "Embedding" <-> ${embeddingSQL}::vector LIMIT 2`;
-  // -- ORDER BY "Embedding" <-> ${embeddingSQL}::vector LIMIT 5`;
+const insertarEmbeddingsAObjeto = async (
+  nombreDocumento: string,
+  objArray: any[]
+) => {
+  // Generamos un arreglo del tipo [string] únicamente con las descripciones
+  const descripcionesArray = objArray.map((obj: any) => obj.descripcion);
 
-  // const similitudes = await prisma.$queryRaw`
-  // SELECT "idProducto", "NombreProducto", "Descripcion", "Embedding::text" FROM "ProductosEmbeddings"
-  // ORDER BY "Embedding" <-> ${embeddingSQL}::vector LIMIT 5`;
-
-  // console.log(require("util").inspect({ similitudes }, { depth: null }));
-
-  const similitudesString: string[] = similitudes.map(
-    (similitud) => `${similitud.Descripcion}"""`
+  // Obtenemos los embeddings de cada descripción
+  const descripcionesEmbeddings = await embeberDocumento(
+    nombreDocumento,
+    descripcionesArray
   );
-  // console.log({ similitudesString });
 
-  return similitudesString;
-  // return [""];
+  // Insertamos los embeddings en el objeto original
+  const result = objArray.map((prod: any, i: any) => ({
+    ...prod,
+    embedding: descripcionesEmbeddings.data[i].embedding,
+  }));
+
+  return result;
+};
+
+export const parseSQLToVector = async () => {
+  let prodDesc: any;
+  let prodPrecio: any;
+  let servDesc: any;
+  let servPrecio: any;
+  let paqDesc: any;
+  let paqPrecio: any;
+
+  let recienCargados = false;
+
+  if (!existenArchivos(folder)) {
+    try {
+      console.log("Generando archivos JSON...");
+      // Obtenemos los datos de la BD
+      prodDesc = await srvProdDescrToString();
+      prodPrecio = await srvProdPrecioToString();
+      servDesc = await srvServiciosDescToString();
+      servPrecio = await srvServiciosPrecioToString();
+      paqDesc = await srvPaqueteDescripcionToArrayString();
+      paqPrecio = await srvPaquetePrecioToArraString();
+
+      // Insertamos los embeddings en los objetos
+      prodDesc = await insertarEmbeddingsAObjeto(
+        "Producto Descripcion",
+        prodDesc
+      );
+      prodPrecio = await insertarEmbeddingsAObjeto(
+        "Producto Precio",
+        prodPrecio
+      );
+      servDesc = await insertarEmbeddingsAObjeto(
+        "Servicio Descripcion",
+        servDesc
+      );
+      servPrecio = await insertarEmbeddingsAObjeto(
+        "Servicio Precio",
+        servPrecio
+      );
+      paqDesc = await insertarEmbeddingsAObjeto("Paquete Descripcion", paqDesc);
+      paqPrecio = await insertarEmbeddingsAObjeto("Paquete Precio", paqPrecio);
+
+      // Exportamos los objetos a archivos JSON para su posterior uso
+      await exportarData(prodDesc, folder, "ProductoDescripcion");
+      await exportarData(prodPrecio, folder, "ProductoPrecio");
+      await exportarData(servDesc, folder, "ServicioDescripcion");
+      await exportarData(servPrecio, folder, "ServicioPrecio");
+      await exportarData(paqDesc, folder, "PaqueteDescripcion");
+      await exportarData(paqPrecio, folder, "PaquetePrecio");
+
+      recienCargados = true;
+
+      console.log("Archivos JSON generados.");
+    } catch (error) {
+      console.error(error);
+      return error;
+    }
+  } else {
+    // Si los archivos existen, los cargamos en objetos independientes
+    prodDesc = await FileToObject(folder, "ProductoDescripcion");
+    prodPrecio = await FileToObject(folder, "ProductoPrecio");
+    servDesc = await FileToObject(folder, "ServicioDescripcion");
+    servPrecio = await FileToObject(folder, "ServicioPrecio");
+    paqDesc = await FileToObject(folder, "PaqueteDescripcion");
+    paqPrecio = await FileToObject(folder, "PaquetePrecio");
+  }
+
+  // Insertamos los embeddings en la BD en sus correspondientes tablas
+  const prodDescCount = await srvInsertarProductoEmbedding(prodDesc);
+  const prodPrecioCount = await srvInsertarProductoEmbedding(prodPrecio);
+  const servDescCount = await srvInsertarServicioEmbedding(servDesc);
+  const servPrecioCount = await srvInsertarServicioEmbedding(servPrecio);
+  const paqDescCount = await srvInsertarPaqueteEmbedding(paqDesc);
+  const paqPrecioCount = await srvInsertarPaqueteEmbedding(paqPrecio);
+
+  console.log("Datos insertados: /n", {
+    ProductosDescripcion: prodDescCount,
+    ProductosPrecios: prodPrecioCount,
+    ServiciosDescripcion: servDescCount,
+    ServiciosPrecios: servPrecioCount,
+    PaquetesDescripcion: paqDescCount,
+    PaquetesPrecios: paqPrecioCount,
+  });
+};
+
+export const realizarBusquedaSemantica = async (vector: number[]) => {
+  const productos = await srvObtenerProductoEmbedding(vector);
+  const servicios = await srvObtenerServiciosEmbeddings(vector);
+  const paquetes = await srvObtenerPaquetesEmbeddings(vector);
+
+  return { productos, servicios, paquetes };
+};
+
+export const realizarBusquedaSemanticaFiltrada = async (vector: number[]) => {
+  const productos = await srvObtenerProductoEmbedding(vector);
+  const servicios = await srvObtenerServiciosEmbeddings(vector);
+  const paquetes = await srvObtenerPaquetesEmbeddings(vector);
+
+  
+
+  const embedding = pgvector.toSql(vector);
+
+  const similitudes =
+    await prisma.$queryRaw`SELECT productoembedding_id, producto_id, descripcion, embedding::text 
+    FROM (
+      VALUES (${productos[0].descripcion}, ${productos[0].embedding}),
+    )
+    ORDER BY embedding <-> ${embedding}::vector LIMIT 2`;
+
+  return similitudes;
+
+ 
 };
