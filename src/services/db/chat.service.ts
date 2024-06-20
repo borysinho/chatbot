@@ -16,6 +16,7 @@ export const srvInsertarChat = async (
   profileName: string,
   role: Role
 ) => {
+  console.log(whatsappNumber, content, profileName);
   const chat = await prisma.chat.create({
     data: {
       content,
@@ -33,6 +34,8 @@ export const srvInsertarChat = async (
       },
     },
   });
+
+  console.log(chat);
 
   return chat;
 };

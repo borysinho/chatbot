@@ -1,6 +1,7 @@
 import axios from "axios";
 import fs from "fs";
 import { v4 as uuidv4 } from "uuid";
+import path from "path";
 
 import * as cloudinary from "cloudinary";
 import { AssemblyAI } from "assemblyai";
@@ -38,6 +39,28 @@ export const ListMessagesFromNumber = (number: string) => {
       return chatContent;
     });
 };
+
+export async function sendPdf(to: string, pdfLocation: string): Promise<void> {
+  // Guardar PDF para enviar
+  console.log(pdfLocation);
+
+  try {
+    const data = {
+      from: `${process.env.TWILIO_FROM_NUMBER}`,
+      to: `whatsapp:+${to}`,
+      mediaUrl: [pdfLocation],
+    };
+
+    await twilioClient.messages
+      .create(data)
+      .then((message) => console.log("Mensaje Enviado. sid:" + message.sid));
+  } catch (error) {
+    console.error("Error sending WhatsApp message:", error);
+  } finally {
+    // Elimina el archivo temporal después de enviarlo
+    fs.unlinkSync(pdfLocation);
+  }
+}
 
 export const DownloadAudio = async (audioUrl: string): Promise<string> => {
   const accountSid: string = process.env.TWILIO_ACCOUNT_SID as string;

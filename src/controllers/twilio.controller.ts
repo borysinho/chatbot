@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { sendWhatsappMessage } from "../services/twilio.service";
+import { sendPdf, sendWhatsappMessage } from "../services/twilio.service";
 import { twiml } from "twilio";
 import { HttpException, catchedAsync, response } from "../utils";
 import {
@@ -13,6 +13,7 @@ import {
   openAICompletion,
   systemContext,
 } from "../services/completions.service";
+import { generatePdf } from "../services/pdf.service";
 import { embeberDocumento } from "../services/embeddings.service";
 import { srvObtenerProductoEmbedding } from "../services/db/productos.service";
 import { srvObtenerDocumentos } from "../services/db/documents.service";
@@ -28,6 +29,8 @@ export const newMessage = catchedAsync(async (req: Request, res: Response) => {
     MediaContentType0,
     MediaUrl0,
   } = req.body;
+
+  console.log("entra");
 
   // Convertimos a embeddings el texto del usuario
   const textoUsuarioEmbedding = await embeberDocumento("user-text", [mensaje]);
